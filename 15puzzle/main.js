@@ -10,7 +10,7 @@ var PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
 var ASSETS = {
   // 画像
   image: {
-    'pieces': 'https://cdn.jsdelivr.net/gh/alkn203/15puzzle@main/assets/pieces.png',
+    'pieces': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main@main/assets/pieces.png',
   },
 };
 // メインシーン

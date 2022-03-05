@@ -10,9 +10,9 @@ var BALL_XDIR_ADJ = 6;
 var ASSETS = {
   // 画像
   image: {
-    'paddle': 'https://cdn.jsdelivr.net/gh/alkn203/phina-breakout-tutorial@main/assets/paddle.png',
-    'ball': 'https://cdn.jsdelivr.net/gh/alkn203/phina-breakout-tutorial@main/assets/ball.png',
-    'block': 'https://cdn.jsdelivr.net/gh/alkn203/phina-breakout-tutorial@main/assets/block.png',
+    'paddle': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/breakout/assets/paddle.png',
+    'ball': 'https://cdn.jsdelivr.net/gh/phina-game-prototypes@main/breakout/assets/ball.png',
+    'block': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/breakout/assets/block.png',
   },
 };
 // メインシーン

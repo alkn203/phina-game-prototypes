@@ -12,7 +12,7 @@ var EXP_FRAME = 12; // 爆弾爆発のフレームインデックス
 var ASSETS = {
   // 画像
   image: {
-    'minespsheet': 'https://cdn.jsdelivr.net/gh/alkn203/minesweeper@main/assets/minespsheet.png',
+    'minespsheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/minesweeper/assets/minespsheet.png',
   },
 };
 // メインシーン
