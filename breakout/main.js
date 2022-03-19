@@ -11,7 +11,7 @@ var ASSETS = {
   // 画像
   image: {
     'paddle': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/breakout/assets/paddle.png',
-    'ball': 'https://cdn.jsdelivr.net/gh/phina-game-prototypes@main/breakout/assets/ball.png',
+    'ball': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/breakout/assets/ball.png',
     'block': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/breakout/assets/block.png',
   },
 };
@@ -49,25 +49,25 @@ phina.define('MainScene', {
     var dx = BLOCK_WIDTH / 2;
     var dy = BLOCK_HEIGHT / 2;
     var group = this.blockGroup;
-    
+
     Array.range(1, 9).each(function(i) {
       Array.range(2, 5).each(function(j) {
         var block = Block().addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
-    });      
+    });
     Array.range(1, 9).each(function(i) {
       Array.range(5, 8).each(function(j) {
         var block = Block(1).addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
-    });      
+    });
     Array.range(1, 9).each(function(i) {
       Array.range(8, 11).each(function(j) {
         var block = Block(2).addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
-    });      
+    });
   },
   //
   onpointmove: function(e) {
@@ -98,7 +98,7 @@ phina.define('MainScene', {
     var ball = this.ball;
     var rect = ball.getNextRect();
     var paddle = this.paddle;
-    // 矩形判定    
+    // 矩形判定
     if (Collision.testRectRect(rect, paddle)) {
       // 上からヒット
       if (ball.y < paddle.y) {
@@ -272,7 +272,7 @@ phina.define('MainScene', {
   // 指定された座標のブロックを返す
   getBlockByXY: function(x, y) {
     var result = null;
-    
+
     this.blockGroup.children.some(function(block) {
       if (block.x === x && block.y === y) {
         result = block;
