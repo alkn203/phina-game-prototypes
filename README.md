@@ -17,5 +17,13 @@ Game prototypes powered by phina.js
 
 [runstant](https://runstant.com/alkn203/projects/423efcc6)
 
+## minesweeper
+
+![minesweeper](https://alkn203.github.io/phina-game-prototypes/images/minesweeper.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/minesweeper/)
+
+[runstant](https://runstant.com/alkn203/projects/247a58eb)
+
 # LICENSE
 MIT
