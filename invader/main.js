@@ -13,8 +13,6 @@ var ENEMY_NUM_X = 9;
 var ENEMY_NUM_Y = 5;
 var ENEMY_NUM = 45;
 var ALIEN_SPEED = 1000;
-var OFFSET_X = GRID_SIZE / 2;
-var OFFSET_Y = GRID_SIZE / 2;
 var BEAM_SPEED = 2;
 var PROB_BEAM = 0.0005;
 // アセット
