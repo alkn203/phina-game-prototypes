@@ -7,14 +7,17 @@ var GRID_SIZE = 64;
 var GRID_NUM_X = 10;
 var GRID_NUM_Y = 15;
 var PLAYER_SPEED = 5;
-var SHOT_SPEED = 10;
-var RELOAD_TIME = 50;
+var SHOT_SPEED = 20;
+var RELOAD_TIME = 1500;
 var ENEMY_NUM_X = 9;
 var ENEMY_NUM_Y = 5;
 var ENEMY_NUM = 45;
-var ALIEN_SPEED = 1000;
+var ENEMY_SPEED = 0.5;
+var OFFSET_X = GRID_SIZE / 2;
+var OFFSET_Y = GRID_SIZE / 2;
 var BEAM_SPEED = 2;
 var PROB_BEAM = 0.0005;
+var UFO_INTERVAL = 8000;
 // アセット
 var ASSETS = {
   // 画像
@@ -100,13 +103,23 @@ phina.define(`MainScene`, {
     this.beamGroup = DisplayElement().addChildTo(this);
     this.enemyGroup = DisplayElement().addChildTo(this);
     this.explosionGroup = DisplayElement().addChildTo(this);
+    this.ufoGroup = DisplayElement().addChildTo(this);
+    this.scoreGroup = DisplayElement().addChildTo(this);
     // プレイヤー配置
     this.player = Player().addChildTo(this);
+    // コライダー設定
     this.player.setPosition(this.gx.center(), this.gy.span(14));
+    this.player.collider.setSize(50, 50);
+    //
+    this.time = 0;
     // ショット間隔管理用
-    this.prevTime = -RELOAD_TIME;
-    
+    this.reloadTime = -RELOAD_TIME;
+    // UFO出現管理用
+    this.ufoTime = UFO_INTERVAL;
+    //
     this.locateEnemys();
+    // 敵の横移動方向
+    this.enemyDir = -1;
   },
   // 敵配置
   locateEnemys: function() {
@@ -121,6 +134,45 @@ phina.define(`MainScene`, {
       // Gridを利用して配置
       enemy.x = self.gx.span(xIndex) + GRID_SIZE;
       enemy.y = self.gy.span(yIndex) + GRID_SIZE;
+      // コライダー設定
+      enemy.collider.hide();
+      
+    });
+  },
+  // 敵移動
+  moveEnemys: function() {
+    var self = this;
+    var result = false;
+    
+    this.enemyGroup.children.some(function(enemy) {
+      // 画面端到達チェック
+      if ((enemy.left - ENEMY_SPEED < 0.001) || (enemy.right + ENEMY_SPEED > SCREEN_WIDTH - 0.001)) {
+        result = true;
+        return true;
+      }
+    });
+    // 到達していたら下に移動して向き反転
+    if (result) {
+      this.enemyGroup.children.each(function(enemy) {
+        enemy.y += GRID_SIZE / 2;
+      });
+      
+      this.enemyDir *= -1;
+    }
+    // 移動処理
+    this.enemyGroup.children.each(function(enemy) {
+      enemy.x += self.enemyDir * ENEMY_SPEED;
+    });
+  },
+  // 敵の攻撃
+  enemyAttack: function() {
+    var beamGroup = this.beamGroup;
+    
+    this.enemyGroup.children.each(function(enemy) {
+      // 一定確率でビーム発射
+      if (Math.randfloat(0, 1) < PROB_BEAM) {
+        Beam().addChildTo(beamGroup).setPosition(enemy.x, enemy.y);
+      }
     });
   },
   // 敵とショットの当たり判定
@@ -132,7 +184,7 @@ phina.define(`MainScene`, {
     enemys.each(function(enemy) {
       shots.each(function(shot) {
         // 当たり判定
-        if (enemy.hitTestElement(shot)) {
+        if (enemy.collider.hitTest(shot.collider)) {
           shot.remove();
           // 爆発表示
           var explosion = Explosion().addChildTo(explosions);
@@ -142,25 +194,74 @@ phina.define(`MainScene`, {
       });
     });
   },
+  // 敵のビームと自機の当たり判定
+  hitTestBeamAndPlayer: function() {
+    var beams = this.beamGroup.children;
+    var player = this.player;
+    var self = this;
+    // グループをループ
+    beams.each(function(beam) {
+      // 当たり判定
+      if (beam.collider.hitTest(player.collider)) {
+          self.exit();
+      }
+    });
+  },
+  // UFOとショットの当たり判定 
+  hitTestUfoAndShot: function() { 
+    var ufos = this.ufoGroup.children; 
+    var shots = this.shotGroup.children; 
+    var scores = this.scoreGroup; 
+    // グループをループ 
+    ufos.each(function(ufo) { 
+      shots.each(function(shot) { 
+        // 当たり判定 
+        if (ufo.hitTestElement(shot)) { 
+          shot.remove(); 
+          // 点数表示
+          var score = Score(1000).addChildTo(scores); 
+          score.setPosition(ufo.x, ufo.y); 
+          ufo.remove();
+        }
+      }); 
+    }); 
+  },
   // 毎フレーム処理
   update: function(app) {
+    //
+    this.time += app.deltaTime;
     // 押された方向キーの情報を得る
     var dir = app.keyboard.getKeyDirection();
     // 左右移動
     if ((dir.x === -1 && dir.y === 0) || (dir.x === 1 && dir.y === 0)) {
       this.player.x += dir.x * PLAYER_SPEED;
     }
+    // 敵移動
+    this.moveEnemys();
+    // 敵攻撃
+    this.enemyAttack();
     // スペースキーでミサイル発射
     if (app.keyboard.getKey('space')) {
       // 一定フレーム経過後なら
-      if (app.frame - this.prevTime > RELOAD_TIME) {
+      if (this.time - this.reloadTime > RELOAD_TIME) {
         // プレイヤーの位置に表示
-        Shot().addChildTo(this.shotGroup).setPosition(this.player.x, this.player.y);
-        this.prevTime = app.frame;
+        var shot = Shot().addChildTo(this.shotGroup);
+        shot.setPosition(this.player.x, this.player.y);
+        // コライダー設定
+        shot.collider.hide().setSize(8, 32);
+        this.reloadTime = this.time;
       }
     }
-    //
+    // 当たり判定
     this.hitTestEnemyAndShot();
+    this.hitTestBeamAndPlayer();
+    this.hitTestUfoAndShot();
+    //
+    if (this.time - this.ufoTime > UFO_INTERVAL) {
+      var ufo = Ufo().addChildTo(this.ufoGroup);
+      ufo.setPosition(SCREEN_WIDTH, this.gy.span(1));
+      this.ufoTime = this.time
+    }
   },
 });
 // プレイヤークラス
@@ -218,6 +319,8 @@ phina.define('Ufo', {
     var anim = FrameAnimation('ufo_ss').attachTo(this);
     //アニメーションを再生する
     anim.gotoAndPlay('loop');
+    //
+    this.physical.force(-4, 0);
   },
 });
 // ビームクラス
@@ -230,6 +333,14 @@ phina.define('Beam', {
     this.superInit('beam');
     // 下方向に移動
     this.physical.force(0, BEAM_SPEED);
+    //
+    this.collider.setSize(16, 64);
+  },
+  //
+  update: function() {
+    if (this.top > SCREEN_HEIGHT) {
+      this.remove();
+    }
   },
 });
 // 爆発クラス
@@ -255,6 +366,26 @@ phina.define('Explosion', {
     }
   },
 });
+// スコアクラス 
+phina.define('Score', {
+  // Labelを継承
+  superClass: 'Label',
+  // 初期化
+  init: function(num) {
+    // 親クラスの初期化
+    this.superInit();
+    this.score = num;
+    this.text = this.score;
+    //
+    this.fill = 'lime';
+    //
+    var self = this;
+    this.tweener.wait(1000)
+                .call(function() {
+                  self.remove();
+                });
+   }, 
+ });
 // メイン処理
 phina.main(function() {
   // アプリケーションを生成
