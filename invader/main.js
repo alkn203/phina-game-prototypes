@@ -84,7 +84,37 @@ var ASSETS = {
     },
   },
 };
-
+// タイトルシーン
+phina.define('TitleScene', {
+  superClass: 'DisplayScene',
+  // コンストラクタ
+  init: function() {
+    this.superInit();
+    // 背景色
+    this.backgroundColor = 'black';
+    // タイトル
+    Label({
+      text: 'INVADER GAME',
+      fontSize: 64,
+      fill: 'red',
+    }).addChildTo(this).setPosition(this.gridX.center(), this.gridY.span(4));
+    // 敵表示
+    Enemy().addChildTo(this).setPosition(this.gridX.center(), this.gridY.center());
+    //
+    Label({
+      text: 'PRESS KEY TO START',
+      fill: 'red',
+      fontSize: 40,
+    }).addChildTo(this)
+      .setPosition(this.gridX.center(), this.gridY.span(12))
+      .tweener.fadeOut(1000).fadeIn(1000).wait(1000).setLoop(true).play();
+    // 画面タッチ時
+    this.on('keyup', function() {
+      // 次のシーンへ
+      this.exit();
+    });
+  },
+});
 // メインシーン
 phina.define(`MainScene`, {
   // DisplaySceneを継承
@@ -112,6 +142,8 @@ phina.define(`MainScene`, {
     this.player.collider.setSize(50, 50);
     //
     this.time = 0;
+    //
+    this.state = 'playing';
     // ショット間隔管理用
     this.reloadTime = -RELOAD_TIME;
     // UFO出現管理用
@@ -203,7 +235,7 @@ phina.define(`MainScene`, {
     beams.each(function(beam) {
       // 当たり判定
       if (beam.collider.hitTest(player.collider)) {
-          self.exit();
+          self.gameOver();
       }
     });
   },
@@ -226,8 +258,34 @@ phina.define(`MainScene`, {
       }); 
     }); 
   },
+  //
+  gameOver: function() {
+    this.state = 'over';
+    var self = this
+    // 敵などの動きを止める
+    this.beamGroup.children.each(function(beam) {
+      beam.physical.force(0,0);
+    });
+
+    this.ufoGroup.children.each(function(ufo) {
+      ufo.physical.force(0,0);
+    });
+
+    this.shotGroup.children.each(function(shot) {
+      shot.physical.force(0,0);
+    });
+    // 一定時間経過後タイトルへ移動
+    this.tweener.wait(2000)
+                .call(function() {
+                  self.exit('title')
+                });
+  },
   // 毎フレーム処理
   update: function(app) {
+    // ゲームオーバーなら何もしない
+    if (this.state === 'over') {
+      return;
+    }
     //
     this.time += app.deltaTime;
     // 押された方向キーの情報を得る
@@ -256,7 +314,7 @@ phina.define(`MainScene`, {
     this.hitTestEnemyAndShot();
     this.hitTestBeamAndPlayer();
     this.hitTestUfoAndShot();
-    //
+    // UFO出現管理
     if (this.time - this.ufoTime > UFO_INTERVAL) {
       var ufo = Ufo().addChildTo(this.ufoGroup);
       ufo.setPosition(SCREEN_WIDTH, this.gy.span(1));
@@ -322,6 +380,12 @@ phina.define('Ufo', {
     //
     this.physical.force(-4, 0);
   },
+  //
+  update: function() {
+    if (this.right < 0) {
+      this.remove();
+    }
+  },
 });
 // ビームクラス
 phina.define('Beam', {
@@ -380,10 +444,9 @@ phina.define('Score', {
     this.fill = 'lime';
     //
     var self = this;
-    this.tweener.wait(1000)
-                .call(function() {
-                  self.remove();
-                });
+    this.tweener.wait(1000).call(function() {
+      self.remove();
+    });
    }, 
  });
 // メイン処理
@@ -394,10 +457,4 @@ phina.main(function() {
   });
   // 実行
   app.run();
-  // 無理やり canvas にフォーカス
-  ;(function() {
-    var canvas = app.domElement;
-    canvas.setAttribute('tabindex', '0');
-    canvas.focus();
-  })();
 });
