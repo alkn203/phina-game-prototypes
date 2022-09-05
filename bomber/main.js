@@ -107,6 +107,8 @@ var ASSETS = {
 var TILE_SIZE = 64;
 var TILE_HALF = TILE_SIZE / 2;
 var TILE_NONE = 0;
+var TILE_WALL = 1;
+var TILE_BLOK = 2;
 
 // キー方向配列
 var KEY_DIR_ARRAY = [
@@ -169,6 +171,8 @@ phina.define("MainScene", {
     this.enemyGroup = DisplayElement().addChildTo(this);
     // プレイヤー配置
     this.player = Player().addChildTo(this);
+    // コライダー表示
+    this.player.collider.show();
     this.locateObject(this.player, STAGE_DATA[0].playerPos);
   },
   // オブジェクト配置用メソッド
@@ -222,25 +226,21 @@ phina.define("MainScene", {
         //if (bomb) return;
         // 次の移動先矩形
         if (dx !== 0) {
-          var rx = player.left + dx;
-          var ry = player.top + 4;
-          var rect = Rect(rx, ry, player.width, player.height - 8);
-          if (map.checkTile(rect.left, rect.top) !== TILE_NONE ||
-              map.checkTile(rect.left, rect.bottom) !== TILE_NONE ||
-              map.checkTile(rect.right, rect.top) !== TILE_NONE ||
-              map.checkTile(rect.right, rect.bottom) !== TILE_NONE) {
+          player.collider.offset(dx, 0);
+          player.collider.setSize(TILE_SIZE, TILE_SIZE - 8);
+          //
+          var rect = player.collider.getAbsoluteRect();
+          if (self.checkTileStatic(rect)) {
             return;
           }
         }
 
         if (dy !== 0) {
-          var rx2 = player.left + 4;
-          var ry2 = player.top + dy;
-          var rect2 = Rect(rx2, ry2, player.width - 8, player.height);
-          if (map.checkTile(rect2.left, rect2.top) !== TILE_NONE ||
-              map.checkTile(rect2.left, rect2.bottom) !== TILE_NONE ||
-              map.checkTile(rect2.right, rect2.top) !== TILE_NONE ||
-              map.checkTile(rect2.right, rect2.bottom) !== TILE_NONE) {
+          player.collider.offset(0, dy);
+          player.collider.setSize(TILE_SIZE - 8, TILE_SIZE);
+          //
+          var rect2 = player.collider.getAbsoluteRect();
+          if (self.checkTileStatic(rect2)) {
             return;
           }
         }
@@ -249,30 +249,19 @@ phina.define("MainScene", {
       }
     });
   },
-  // プレイヤーの矩形とオブジェクトとの当たり判定
-  hitTestPlayerStatic: function(rect) {
-    var result = false;
-    var player = this.player;
+  // 静的タイルとの当たり判定
+  checkTileStatic: function(rect) {
+    var map = this.map;
+    // 矩形の四隅をチェック
+    var t1 = map.checkTile(rect.left, rect.top);
+    var t2 = map.checkTile(rect.left, rect.bottom);
+    var t3 = map.checkTile(rect.right, rect.top);
+    var t4 = map.checkTile(rect.right, rect.bottom);
     
-    this.staticGroup.children.some(function(obj) {
-      // 当たり判定がある場合
-      if (Collision.testRectRect(rect, obj)) {
-        // 位置を補正してコーナーで移動しやすくする
-        // 左右から上下
-        if (obj.y < player.y || obj.y > player.y) {
-          if (player.x < obj.left) player.x = obj.x - GRID_SIZE;
-          if (player.x > obj.right) player.x = obj.x + GRID_SIZE;
-        }
-        // 上下から左右
-        if (obj.x < player.x || obj.x > player.x) {
-          if (player.y < obj.top) player.y = obj.y - GRID_SIZE;
-          if (player.y > obj.bottom) player.y = obj.y + GRID_SIZE;
-        }
-        result = true;
-        return true;
-      }
-    });
-    return result;
+    if ((t1 + t2 + t3 + t4) === 0) {
+      return false;
+    }
+    return true;
   },
   // プレイヤーと敵との当たり判定
   hitTestPlayerEnemy: function() {
@@ -311,14 +300,15 @@ phina.define("MainScene", {
     if (key.getKeyUp('Z')) {
       var bomb = Bomb().addChildTo(this.bombGroup);
       // 配置がズレないようにインデックス値に変換
-      var i = (player.x / GRID_SIZE) | 0;
-      var j = (player.y / GRID_SIZE) | 0;
-      this.locateObject(bomb, i, j);
+      var i = Math.floor(player.x / TILE_SIZE);
+      var j = Math.floor(player.y / TILE_SIZE);
+      this.locateObject(bomb, Vector2(i, j));
       // explodeイベント登録
       bomb.on('explode', function() {
-        var x = bomb.x;
-        var y = bomb.y;
+        //
+        var pos = bomb.tilePos;
         var power = bomb.power;
+        //
         bomb.remove();
         //
         var exolodeCount = 1;
@@ -328,60 +318,68 @@ phina.define("MainScene", {
         var explosion = Explosion('center', rot);
         explosion.addChildTo(self.explosionGroup).setPosition(x, y);
         // 四方向ループ
-        EXPLODE_ARR.each(function(elem) {
-          var dirX = elem[0];
-          var dirY = elem[1];
-          // １ブロック先の位置
-          var dx = x + dirX * GRID_SIZE;
-          var dy = y + dirY * GRID_SIZE;
+        DIR_ARRAY.each(function(dir) {
+          var dx = dir.x;
+          var dy = dir.y;
           // 爆発のグラフィック回転方向セット
-          if (dirX === 1) rot = 90;
-          if (dirX === -1) rot = 270;
-          if (dirY === 1) rot = 180;
-          if (dirY === -1) rot = 0
+          if (dx === 1) {
+            rot = 90;
+          }
+          if (dx === -1) {
+            rot = 270;
+          }
+          if (dy === 1) {
+            rot = 180;
+          }
+          if (dy === -1) {
+            rot = 0;
+          }
+          //
+          var nextPos = Vector2.add(pos, dir);
           // 爆発処理
-          self.explode(dirX, dirY, dx, dy, rot, power, exolodeCount);  
+          self.explodeNext(nextPos, dir, rot, power, exolodeCount);  
         });
       });
     }
   },
   // 爆発処理
-  explode: function(dirX, dirY, x, y, rot, power, exolodeCount) {
-    // 指定した位置にあるオブジェクトを得る
-    var obj = this.getObject(x, y);
+  explodeNext: function(pos, dir, rot, power, exolodeCount) {
+    // 指定した位置のタイルをチェック
+    var tile = this.map.checkTile(pos);
     // 壁
-    if (obj && obj.id === 1) return;
+    if (tile === TILE_WALL) {
+      return;
+    }
     // ブロック
-    if (obj && obj.id === 2) {
+    if (tile === TILE_BLOCK) {
       // 破壊エフェクト
-      obj.disable();
+      //obj.disable();
       return;
     }
     // 指定した位置にある爆弾を得る
-    var bomb = this.getBomb(x, y);
+    //var bomb = this.getBomb(x, y);
     // 爆弾があれば誘爆
-    if (bomb) {
-      bomb.flare('explode');
+    //if (bomb) {
+      //bomb.flare('explode');
+      //return;
+    //}
+    /// 爆発の端
+    if (power === exolodeCount) {
+      var edge = Explosion('edge', rot);
+      edge.addChildTo(this.explosionGroup);
+      locateObject(edge, pos);
       return;
     }
-    // 何もなし      
-    if (!obj) {
-      // 爆発の端
-      if (power === exolodeCount) {
-        var edge = Explosion('edge', rot).addChildTo(this.explosionGroup);
-        edge.setPosition(x, y);
-        return;
-      }
-      // カウントアップ
-      exolodeCount++;
-      // 途中の爆発
-      var middle = Explosion('middle', rot).addChildTo(this.explosionGroup);
-      middle.setPosition(x, y);
-      var dx = x + dirX * GRID_SIZE;
-      var dy = y + dirY * GRID_SIZE;
-      // 同方向に１マス進めて再帰呼び出し
-      this.explode(dirX, dirY, dx, dy, rot, power, exolodeCount);
-    }
+    // カウントアップ
+    exolodeCount++;
+    // 途中の爆発
+    var middle = Explosion('middle', rot);
+    middle.addChildTo(this.explosionGroup);
+    locateObject(middle, pos);
+    //
+    var nextPos = Vector2.add(pos, dir);
+    // 同方向に１マス進めて再帰呼び出し
+    this.explodeNext(nextPos, dir, rot, power, exolodeCount);
   },
   // 敵１とオブジェクトとの当たり判定
   hitTestEnemy1Static: function() {
