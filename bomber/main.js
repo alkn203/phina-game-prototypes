@@ -108,7 +108,7 @@ var TILE_SIZE = 64;
 var TILE_HALF = TILE_SIZE / 2;
 var TILE_NONE = 0;
 var TILE_WALL = 1;
-var TILE_BLOK = 2;
+var TILE_BLOCK = 2;
 
 // キー方向配列
 var KEY_DIR_ARRAY = [
@@ -191,7 +191,7 @@ phina.define("MainScene", {
     //if (this.player.defeated) return;    
     // プレイヤー関係処理
     this.checkMove(app);
-    //this.setBomb(app);
+    this.setBomb(app);
     // プレイヤーがやられたら
     //if (this.hitTestPlayerEnemy() || this.hitTestPlayerExplosion()) {
       // イベント発火
@@ -311,12 +311,13 @@ phina.define("MainScene", {
         //
         bomb.remove();
         //
-        var exolodeCount = 1;
+        var explodeCount = 1;
         // 爆発の回転方向
         var rot = 0;
         // 中心の爆発
         var explosion = Explosion('center', rot);
-        explosion.addChildTo(self.explosionGroup).setPosition(x, y);
+        explosion.addChildTo(self.explosionGroup);
+        self.locateObject(explosion, pos);
         // 四方向ループ
         DIR_ARRAY.each(function(dir) {
           var dx = dir.x;
@@ -337,15 +338,15 @@ phina.define("MainScene", {
           //
           var nextPos = Vector2.add(pos, dir);
           // 爆発処理
-          self.explodeNext(nextPos, dir, rot, power, exolodeCount);  
+          self.explodeNext(nextPos, dir, rot, power, explodeCount);  
         });
       });
     }
   },
   // 爆発処理
-  explodeNext: function(pos, dir, rot, power, exolodeCount) {
+  explodeNext: function(pos, dir, rot, power, explodeCount) {
     // 指定した位置のタイルをチェック
-    var tile = this.map.checkTile(pos);
+    var tile = this.map.checkTileByIndex(pos.x, pos.y);
     // 壁
     if (tile === TILE_WALL) {
       return;
@@ -364,22 +365,22 @@ phina.define("MainScene", {
       //return;
     //}
     /// 爆発の端
-    if (power === exolodeCount) {
+    if (power === explodeCount) {
       var edge = Explosion('edge', rot);
       edge.addChildTo(this.explosionGroup);
-      locateObject(edge, pos);
+      this.locateObject(edge, pos);
       return;
     }
     // カウントアップ
-    exolodeCount++;
+    explodeCount++;
     // 途中の爆発
     var middle = Explosion('middle', rot);
     middle.addChildTo(this.explosionGroup);
-    locateObject(middle, pos);
+    this.locateObject(middle, pos);
     //
     var nextPos = Vector2.add(pos, dir);
     // 同方向に１マス進めて再帰呼び出し
-    this.explodeNext(nextPos, dir, rot, power, exolodeCount);
+    this.explodeNext(nextPos, dir, rot, power, explodeCount);
   },
   // 敵１とオブジェクトとの当たり判定
   hitTestEnemy1Static: function() {
@@ -546,7 +547,7 @@ phina.define("Bomb", {
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('bombs', GRID_SIZE, GRID_SIZE);
+    this.superInit('bombs', TILE_SIZE, TILE_SIZE);
     // フレームアニメーション指定
     this.anim = FrameAnimation('bombs').attachTo(this);
     this.anim.gotoAndPlay('fire');
@@ -568,7 +569,7 @@ phina.define("Explosion", {
   // コンストラクタ
   init: function(type, angle) {
     // 親クラス初期化
-    this.superInit('explosions', GRID_SIZE, GRID_SIZE);
+    this.superInit('explosions', TILE_SIZE, TILE_SIZE);
     // フレームアニメーション指定
     this.anim = FrameAnimation('explosions').attachTo(this);
     // アニメーションタイプ
