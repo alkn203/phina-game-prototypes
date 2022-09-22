@@ -145,6 +145,8 @@ var STAGE_DATA = [
       [1,1,1,1,1,1,1,1,1,1]],
     // プレイヤーの位置データ
     playerPos: Vector2(1, 1),
+    // 敵の位置データ
+    enemy1Pos: [Vector2(5, 1)],
   },
 ];
 /*
@@ -175,10 +177,19 @@ phina.define("MainScene", {
     // コライダー表示
     this.player.collider.show();
     this.locateObject(this.player, STAGE_DATA[0].playerPos);
+    
+    var self = this;
+    // 敵配置
+    STAGE_DATA[0].enemy1Pos.each(function(pos) {
+      var enemy = Enemy1().addChildTo(self.enemyGroup);  
+      // コライダー表示
+      enemy.collider.show();
+      self.locateObject(enemy, pos);
+    });
     // タイルにコライダー設定
     map.children.each(function(tile, i) {
       if (map._mapData[i] > 0) {
-        tile.collider.show();
+        tile.collider.hide();
       }
     });
     
@@ -193,7 +204,7 @@ phina.define("MainScene", {
   // 毎フレーム処理  
   update: function(app) {
     // 敵の当たり判定関係処理
-    //this.hitTestEnemy1Static();
+    this.hitTestEnemy1Static();
     //this.hitTestEnemy1Bomb();
     //this.hitTestEnemyExplosion();
     //
@@ -287,7 +298,7 @@ phina.define("MainScene", {
     });
     return result;
   },
-  //
+  // プレイヤーと爆弾の当たり判定
   hitTestPlayerBomb: function() {
     var player = this.player;
     var result = false;
@@ -295,8 +306,7 @@ phina.define("MainScene", {
     this.bombGroup.children.some(function(bomb) {
       //
       if (player.collider.hitTest(bomb.collider)) {
-        console.log(1)
-        //
+        // 設置時はすり抜ける
         result = bomb.isPlayerOn ? false : true;
         return true;
       }
@@ -416,17 +426,16 @@ phina.define("MainScene", {
   },
   // 敵１とオブジェクトとの当たり判定
   hitTestEnemy1Static: function() {
+    var map = this.map;
     var self = this;
     
-    this.enemyGroup.children.each(function(enemy) {
-      self.staticGroup.children.each(function(obj) {
-        // 次の移動先矩形
-        var rx = enemy.left + enemy.vx;
-        var rect = Rect(rx, enemy.top, enemy.width, enemy.height);
-        // 当たり判定がある場合
-        if (Collision.testRectRect(enemy, obj)) {
-          // 速度反転
-          enemy.vx *= -1
+    map.children.each(function(tile, i) {
+      self.enemyGroup.children.each(function(enemy) {
+        if (map._mapData[i] > 0) {
+          if (enemy.collider.hitTest(tile.collider)) {
+            // 速度反転
+            enemy.vx *= -1
+          }
         }
       });
     });
@@ -437,9 +446,6 @@ phina.define("MainScene", {
     
     this.enemyGroup.children.each(function(enemy) {
       self.bombGroup.children.each(function(bomb) {
-        // 次の移動先矩形
-        var rx = enemy.left + enemy.vx;
-        var rect = Rect(rx, enemy.top, enemy.width, enemy.height);
         // 当たり判定がある場合
         if (Collision.testRectRect(enemy, bomb)) {
           // 速度反転
@@ -511,11 +517,13 @@ phina.define("Enemy1", {
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('enemy1', GRID_SIZE, GRID_SIZE);
+    this.superInit('enemy1', TILE_SIZE, TILE_SIZE);
     // 移動速度
     this.vx = -2;
     //
     this.defeated = false;
+    //
+    this.collider.setSize(TILE_SIZE - PADDING, TILE_SIZE - PADDING);
     // やられイベント
     this.one('defeat', function() {
       this.defeated = true;
@@ -533,6 +541,8 @@ phina.define("Enemy1", {
     if (this.defeated) return;
     // 移動
     this.moveBy(this.vx, 0);
+    //
+    this.collider.offset(this.vx, 0);
     // 目の向き判定
     this.frameIndex = this.vx < 0 ? 0 : 1;
   },
