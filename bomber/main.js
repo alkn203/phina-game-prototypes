@@ -97,8 +97,7 @@ var ASSETS = {
     'bombs': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/bomber/assets/bombs.png',
     'explosions': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/bomber/assets/explosions.png',
     'tomapiko': 'https://cdn.jsdelivr.net/gh/phinajs/phina.js@develop/assets/images/tomapiko_ss.png',
-    'enemy1': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/bomber/assets/enemy1.png',
-    'enemy2': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/bomber/assets/enemy2.png',
+    'enemy': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/bomber/assets/enemy1.png',
   },
   // スプライトシート
   spritesheet: SPRITE_SHEET
@@ -146,7 +145,10 @@ var STAGE_DATA = [
     // プレイヤーの位置データ
     playerPos: Vector2(1, 1),
     // 敵の位置データ
-    enemy1Pos: [Vector2(5, 1)],
+    enemyPos: [Vector2(5, 1), 
+               Vector2(8, 5),
+               Vector2(5, 9),
+               Vector2(2, 13)],
   },
 ];
 /*
@@ -174,16 +176,12 @@ phina.define("MainScene", {
     this.enemyGroup = DisplayElement().addChildTo(this);
     // プレイヤー配置
     this.player = Player().addChildTo(this);
-    // コライダー表示
-    this.player.collider.show();
     this.locateObject(this.player, STAGE_DATA[0].playerPos);
     
     var self = this;
     // 敵配置
-    STAGE_DATA[0].enemy1Pos.each(function(pos) {
-      var enemy = Enemy1().addChildTo(self.enemyGroup);  
-      // コライダー表示
-      enemy.collider.show();
+    STAGE_DATA[0].enemyPos.each(function(pos) {
+      var enemy = Enemy().addChildTo(self.enemyGroup);
       self.locateObject(enemy, pos);
     });
     // タイルにコライダー設定
@@ -204,18 +202,36 @@ phina.define("MainScene", {
   // 毎フレーム処理  
   update: function(app) {
     // 敵の当たり判定関係処理
-    this.hitTestEnemy1Static();
-    //this.hitTestEnemy1Bomb();
-    //this.hitTestEnemyExplosion();
-    //
-    //if (this.player.defeated) return;    
-    // プレイヤー関係処理
+    this.hitTestEnemyOther();
+    // プレイヤーやられ関連
+    this.checkPlayerDefeat();
+    // プレイヤーがやられていたら何もしない
+    if (this.player.defeated) {
+      return;
+    }
+    // プレイヤーの移動チェック
     this.checkPlayerMove(app);
+    // 爆弾がなければセット可能 
+    if (this.bombGroup.children.length > 0) {
+      return;
+    }
     this.setBomb(app);
-    // プレイヤーがやられたら
-    if (this.hitTestPlayerExplosion()) {
-      // イベント発火
-      this.player.flare('defeat');  
+  },
+  // 敵関連当たり判定
+  hitTestEnemyOther: function() {
+    this.hitTestEnemyStatic();
+    this.hitTestEnemyBomb();
+    this.hitTestEnemyExplosion();
+  },
+  // プレイヤーのやられチェック
+  checkPlayerDefeat: function() {
+    if (this.hitTestPlayerEnemy() || this.hitTestPlayerExplosion()) {
+          this.player.flare('defeat');
+          // 一定時間後タイトルへ
+          this.tweener.wait(2000)
+                      .call(function() {
+                        this.exit('title');
+                      }, this);
     }
   },
   // 移動チェック
@@ -291,7 +307,7 @@ phina.define("MainScene", {
     
     this.enemyGroup.children.some(function(enemy) {
       // 当たり判定がある場合
-      if (!enemy.defeated && player.hitTestElement(enemy)) {
+      if (!enemy.defeated && player.collider.hitTest(enemy.collider)) {
         result = true;
         return true;
       }
@@ -425,7 +441,7 @@ phina.define("MainScene", {
     this.explodeNext(nextPos, dir, rot, power, explodeCount);
   },
   // 敵１とオブジェクトとの当たり判定
-  hitTestEnemy1Static: function() {
+  hitTestEnemyStatic: function() {
     var map = this.map;
     var self = this;
     
@@ -441,13 +457,13 @@ phina.define("MainScene", {
     });
   },
   // 敵１と爆弾との当たり判定
-  hitTestEnemy1Bomb: function() {
+  hitTestEnemyBomb: function() {
     var self = this;
     
     this.enemyGroup.children.each(function(enemy) {
       self.bombGroup.children.each(function(bomb) {
         // 当たり判定がある場合
-        if (Collision.testRectRect(enemy, bomb)) {
+        if (enemy.collider.hitTest(bomb.collider)) {
           // 速度反転
           enemy.vx *= -1
         }
@@ -511,13 +527,13 @@ phina.define("Player", {
 /*
  * 敵1クラス
  */
-phina.define("Enemy1", {
+phina.define("Enemy", {
   // 継承
   superClass: 'Sprite',
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('enemy1', TILE_SIZE, TILE_SIZE);
+    this.superInit('enemy', TILE_SIZE, TILE_SIZE);
     // 移動速度
     this.vx = -2;
     //
