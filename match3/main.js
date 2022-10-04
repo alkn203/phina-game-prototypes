@@ -24,16 +24,14 @@ phina.define('MainScene', {
     var grid = Grid(SCREEN_WIDTH, GEM_NUM_X);
     // グループ
     var gemGroup = DisplayElement().addChildTo(this);
-    var dummyGroup = DisplayElement().addChildTo(this);
+    this.dummyGroup = DisplayElement().addChildTo(this);
+    this.cursorGroup = DisplayElement().addChildTo(this);
     // ペア
     this.pair = [];
-    var self = this;
-    // ピース配置
+    // ジェム配置
     GEM_NUM_X.times(function(spanX) {
       GEM_NUM_X.times(function(spanY) {
-        // ジェム作成
         var gem = Gem().addChildTo(gemGroup);
-        // Gridを利用して配置
         gem.x = grid.span(spanX) + GEM_OFFSET;
         gem.y = grid.span(spanY) + GEM_OFFSET;
         gem.dropCnt = 0;
@@ -41,11 +39,10 @@ phina.define('MainScene', {
     });
     // 参照用
     this.gemGroup = gemGroup;
-    this.dummyGroup = dummyGroup;
     this.cnt = 0;
     this.dropCnt = 0;
     this.grid = grid;
-
+    //ジェム初期化
     this.initGems();
   },
   // ジェム初期化
@@ -61,58 +58,82 @@ phina.define('MainScene', {
       this.initGems();
     }
     // 画面外ジェム配置
-    this.makeHiddenGems();
-    // 3つ並びサーチ開始
-    if (this.canMatch3()) {
-      this.swapGems();
-    }
-    else {
-      console.log('no match3');
-      this.removeRandomColor();
-    }
+    this.initHiddenGems();
   },
   // 画面外のジェム配置
-  makeHiddenGems: function() {
+  initHiddenGems: function() {
     var self = this;
     // 一旦消す
     this.gemGroup.children.eraseIfAll(function(gem) {
-      if (gem.y < 0) return true;  
+      if (gem.y < 0) {
+        return true;
+      }
     });
     
     GEM_NUM_X.times(function(spanX) {
       GEM_NUM_X.times(function(spanY) {
-        // ジェム作成
         var gem = Gem().addChildTo(self.gemGroup);
-        // ランダムな色
         gem.num = Random.randint(0, 6);
         gem.fill = COLOR[gem.num];
         gem.mark = "normal";
-        // Gridを利用して配置
         gem.x = self.grid.span(spanX) + GEM_OFFSET;
+        // 一画面文分上にずらす
         gem.y = self.grid.span(spanY) + GEM_OFFSET - SCREEN_HEIGHT;
         gem.dropCnt = 0;
       });
     });
   },
-    // ジェム入れ替え処理
-  swapGems: function(quickly) {
-    if (quickly === null) {
-      quickly = false;
-    }
-    
-    var g1 = this.pair[0];
-    var g2 = this.pair[1];
-    // アニメーション無し
-    if (quickly) {
-      var tmpX = g1.x;
-      var tmpY = g1.y;
-      g1.x = g2.x;
-      g1.y = g2.y;
-      g2.x = tmpX;
-      g2.y = tmpY;
+  // ペアの選択処理
+  selectPair:function(gem) {
+    // 一つ目
+    if (this.pair.length === 0) {
+      // カーソル表示
+      var cursor1 = Cursor().addChildTo(this.cursorGroup);
+      cursor1.setPosition(gem.x, gem.y);
+      this.pair.push(gem);
+      // 隣り合わせ以外を選択不可にする
+      this.selectableNext();
       return;
     }
+    // 二つ目
+    if (this.pair.length === 1) {
+      cursor2 = Cursor().addChildTo(this.cursorGroup);
+      cursor2.setPosition(gem.x, gem.y);
+      this.pair.push(gem);
+      // 入れ替え処理
+      this.swapGems(false);
+    }
+  },
+  // 隣り合わせ以外を選択不可にする
+  selectableNext: function() {
+    var gem = this.pair[0];
+    // 一旦全てを選択不可に
+    this.gemGroup.children.each(function(gem) {
+      gem.setInteractive(false);
+    });
+    
+    this.gemGroup.children.each(function(target) {
+      var dx = Math.abs(gem.x - target.x);
+      var dy = Math.abs(gem.y - target.y);
+      // 上下左右隣り合わせだけを選択可に
+      if (gem.x === target.x && dy === GRID_SIZE) {
+        target.setInteractive(true);
+      }
+      if (gem.y === target.y && dx === GRID_SIZE) {
+        target.setInteractive(true);
+      }
+    });
+  },
+  // ジェム入れ替え処理
+  swapGems: function(second) {
+    var g1 = this.pair[0];
+    var g2 = this.pair[1];
     var self = this;
+    // 1回目
+    if (!second) {
+      this.setGemSelectable(false);
+      this.cursorGroup.children.clear();
+    }
     // flowで非同期処理
     var flow = Flow(function(resolve) {
       var counter = 2;
@@ -136,9 +157,20 @@ phina.define('MainScene', {
     });
     // 入れ替え後処理
     flow.then(function(message) {
-      if (self.isExistMatch3()) {
+      if (second) {
         self.pair.clear();
-        self.removeGems();
+        self.setGemSelectable(true);
+      }
+      else {
+        //  3つ並びがあれば削除処理へ
+        if (self.isExistMatch3()) {
+          self.pair.clear();
+          self.removeGems();
+        }
+        else {
+          // 戻りの入れ替え
+          self.swapGems(true);
+        }
       }
     });
   },
@@ -170,19 +202,27 @@ phina.define('MainScene', {
   },
   // 横方向の3つ並び以上チェック
   checkHorizontal: function(current) {
-    if (current.mark !== "rmv") current.mark = "tmp";
+    if (current.mark !== "rmv") {
+      current.mark = "tmp";
+    }
 
     this.cnt++;
     var next = this.getGem(Vector2(current.x + GRID_SIZE, current.y));
-    if (next && current.num === next.num) this.checkHorizontal(next);
+    if (next && current.num === next.num) {
+      this.checkHorizontal(next);
+    }
   },
   // 縦方向の3つ並び以上チェック
   checkVertical: function(current) {
-    if (current.mark !== "rmv") current.mark = "tmp";
+    if (current.mark !== "rmv") {
+      current.mark = "tmp";
+    }
 
     this.cnt++;
     var next = this.getGem(Vector2(current.x, current.y + GRID_SIZE));
-    if (next && current.num === next.num) this.checkVertical(next);
+    if (next && current.num === next.num) {
+      this.checkVertical(next);
+    }
   },
   // マークセット
   setMark: function() {
@@ -207,7 +247,9 @@ phina.define('MainScene', {
       if (gem.mark === "rmv") {
         // 削除対象ジェムより上にあるジェムに落下回数をセット
         self.gemGroup.children.each(function(target) {
-          if (target.y < gem.y && target.x === gem.x) target.dropCnt++;
+          if (target.y < gem.y && target.x === gem.x) {
+            target.dropCnt++;
+          }
         });
         // 消去アニメーション用ダミー作成
         var dummy = Gem().addChildTo(self.dummyGroup);
@@ -217,7 +259,9 @@ phina.define('MainScene', {
     });
     // ジェム削除
     this.gemGroup.children.eraseIfAll(function(gem) {
-      if (gem.mark === "rmv") return true;
+      if (gem.mark === "rmv") {
+        return true;
+      }
     });
     // flowで非同期処理
     var flow = Flow(function(resolve) {
@@ -266,73 +310,15 @@ phina.define('MainScene', {
 
     flow.then(function(message) {
       // 画面外のジェムを作り直す
-      self.makeHiddenGems();
+      self.initHiddenGems();
       // 3並び再チェック
       if (self.isExistMatch3()) {
         self.removeGems();
       }
       else {
-        if (self.canMatch3()) {
-          self.swapGems();
-        }
-        else {
-          console.log('no match3');
-          self.removeRandomColor();
-        }
+        self.setGemSelectable(true);
       }
     });
-  },
-  // 3つ並びが作れるか全体をチェックする
-  canMatch3: function() {
-    var result = false;
-    
-    this.gemGroup.children.some(function(gem) {
-      if (gem.y > 0) {
-        var next = this.getGem(Vector2(gem.x - GRID_SIZE, gem.y));
-
-        if (next && this.canNext(gem, next)) {
-          result = true;
-          return true;
-        }
-
-        next = this.getGem(Vector2(gem.x + GRID_SIZE, gem.y));
-        if (next && this.canNext(gem, next)) {
-          result = true;
-          return true;
-        }
-        
-        next = this.getGem(Vector2(gem.x, gem.y + GRID_SIZE));
-        if (next && this.canNext(gem, next)) {
-          result = true;
-          return true;
-        }
-      }
-    }, this);
-    return result;
-  },
-  // 隣との入れ替えが出来るか
-  canNext: function(gem, next) {
-    this.pair.push(gem);
-    this.pair.push(next);
-    
-    var result = false;
-
-    this.swapGems(true);
-
-    if (this.isExistMatch3()) {
-      result = true;
-    }
-    this.swapGems(true);
-    
-    if (!result) {
-      this.pair.clear();
-    }
- 
-    this.gemGroup.children.each(function(gem) {
-      gem.mark = "normal";
-    });
-
-    return result;
   },
   // 指定された位置のジェムを返す
   getGem: function(pos) {
@@ -356,6 +342,12 @@ phina.define('MainScene', {
     
     this.removeGems();
   },
+  //
+  setGemSelectable: function(b) {
+    this.gemGroup.children.each(function(gem) {
+      gem.setInteractive(b);
+    });
+  },
 });
 // ジェムクラス
 phina.define('Gem', {
@@ -374,6 +366,10 @@ phina.define('Gem', {
       
       this.rotation = 22.5;
       this.setInteractive(true);
+    },
+    //
+    onpointend: function() {
+      this.parent.parent.selectPair(this);
     },
 });
 // カーソルクラス
