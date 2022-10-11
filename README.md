@@ -25,13 +25,13 @@ Game prototypes powered by phina.js
 
 [runstant](https://runstant.com/alkn203/projects/247a58eb)
 
-## Invador
+## Invader
 
 ![minesweeper](https://alkn203.github.io/phina-game-prototypes/images/minesweeper.png)
 
-[play](https://alkn203.github.io/phina-game-prototypes/invador/)
+[play](https://alkn203.github.io/phina-game-prototypes/invader/)
 
-[runstant](https://runstant.com/alkn203/projects/247a58eb)
+[runstant](https://runstant.com/alkn203/projects/aae1b55d)
 
 # LICENSE
 MIT
