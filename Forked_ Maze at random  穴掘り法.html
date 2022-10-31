@@ -1,0 +1,182 @@
+<!doctype html>
+ 
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <title>Forked: Maze at random  穴掘り法</title>
+    <meta name="description" content="* 穴掘り法による迷路作成" />
+    
+    <style>*, *:before, *:after {
+  box-sizing: border-box; 
+}
+html {
+  font-size: 62.5%;
+}
+body {
+  color: #444;
+  background-color: hsl(0, 0%, 96%);
+}
+h1 {
+  font-size: 1.8rem;
+}
+
+</style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/gh/phinajs/phina.js@v0.2.3/build/phina.js"></script>
+    <script>phina.globalize();
+// 定数
+var WALL_SIZE = 32; // 壁のサイズ
+var WALL_NUM_X = 19; // 横の壁数（奇数）              
+var WALL_NUM_Y = 29; // 縦の壁数（奇数）              
+var MAZE_WIDTH = WALL_SIZE * WALL_NUM_X; // 迷路横サイズ
+var MAZE_HEIGHT = WALL_SIZE * WALL_NUM_Y; // 迷路縦サイズ
+var OFFSET = WALL_SIZE / 2;
+// 上下左右方向
+var DIRECTIONS = [Vector2(-1, 0), Vector2(0, -1), Vector2(1, 0), Vector2(0, 1)];
+// メインシーン
+phina.define('MainScene', {
+  superClass: 'DisplayScene',
+  // コンストラクタ
+  init: function() {
+    // 親クラス初期化
+    this.superInit({
+      width: MAZE_WIDTH,
+      height: MAZE_HEIGHT,
+    });
+    // 背景色
+    this.backgroundColor = 'gray';
+    // グリッド
+    var gx = Grid(MAZE_WIDTH, WALL_NUM_X);
+    var gy = Grid(MAZE_HEIGHT, WALL_NUM_Y);
+    // グループ
+    var wallGroup = DisplayElement().addChildTo(this);
+    // 分岐点候補
+    this.branches = [];
+    // 一旦壁で埋める
+    WALL_NUM_X.times(function(i) {
+      WALL_NUM_Y.times(function(j) {
+        // 壁作成
+        var wall = Wall().addChildTo(wallGroup);
+        // Gridを利用して配置
+        wall.setPosition(gx.span(i) + OFFSET, gy.span(j) + OFFSET);
+        // インデックス設定
+        wall.i = i;
+        wall.j = j;
+      });
+    });
+    // 参照用
+    this.wallGroup = wallGroup;
+    // 最初の穴掘り（奇数位置）
+    var randI = Array.range(1, WALL_NUM_X, 2).random();
+    var randJ = Array.range(1, WALL_NUM_Y, 2).random();
+    this.deleteWall(randI, randJ);
+    // 起点に穴掘り開始
+    this.dig(randI, randJ);
+  },
+  // 穴掘り処理
+  dig: function(i, j) {
+    var nextI = i;
+    var nextJ = j;
+    // 分岐点登録
+    this.registBranch(i, j);
+    // ランダムな順番で
+    var canDig = DIRECTIONS.shuffle().some(function(direction) {
+      var i2 = i + direction.x * 2;
+      var j2 = j + direction.y * 2;
+      // 2マス先が壁か調べる
+      if (this.getWall(i2, j2)) {
+        // 壁なら2マス先まで掘る
+        this.deleteWall(i + direction.x, j + direction.y);
+        this.deleteWall(i2, j2);
+        // 次の起点
+        nextI = i2;
+        nextJ = j2;
+        return true;
+      }
+    }, this);
+    // 掘り進められるのであれば
+    if (canDig) {
+      // 2マス先を開始位置にして再帰処理
+      this.dig(nextI, nextJ);
+    }
+    else {
+      // 分岐点として使えないので削除
+      this.deleteBranch(nextI, nextJ);
+      // これまでの分岐点から掘り進めるものを探す
+      this.searchBranch();
+    }
+  },
+  // 指定された位置の壁を削除
+  deleteWall: function(indexI, indexJ) {
+    this.wallGroup.children.eraseIfAll(function(wall) {
+      return (wall.i === indexI && wall.j === indexJ);
+    });
+  },
+  // 分岐点を登録
+  registBranch: function(indexI, indexJ) {
+    // ダブり回避
+    var result = this.branches.some(function(branch) {
+      return (branch.i === indexI && branch.j === indexJ);
+    });
+    
+    if (!result) {
+      this.branches.push({i: indexI, j: indexJ});
+    }
+  },
+  // 使えない分岐点を削除
+  deleteBranch: function(indexI, indexJ) {
+    this.branches.eraseIfAll(function(branch) {
+      return (branch.i === indexI && branch.j === indexJ);
+    });
+  },
+  // 使える分岐点を探す
+  searchBranch: function() {
+    if (this.branches.length > 0) {
+      var rand = this.branches.random();
+      this.dig(rand.i, rand.j);
+    }
+  },
+  // 指定されたインデックス位置が壁か調べる
+  getWall: function(i, j) {
+    var result = null;
+    
+    this.wallGroup.children.some(function(wall) {
+      if (wall.i === i && wall.j === j) {
+        result = wall;
+        return true;
+      } 
+    });
+    return result;
+  },
+});
+// 壁クラス
+phina.define('Wall', {
+  // RectangleShapeを継承
+  superClass: 'RectangleShape',
+    // コンストラクタ
+    init: function() {
+      // 親クラス初期化
+      this.superInit({
+        width: WALL_SIZE,
+        height: WALL_SIZE,
+        fill: 'silver',
+        stroke: 'white',
+      });
+    },
+});
+// メイン
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main',
+    width: MAZE_WIDTH,
+    height: MAZE_HEIGHT,
+  });
+  app.run();
+});</script>
+  </body>
+</html>
+
