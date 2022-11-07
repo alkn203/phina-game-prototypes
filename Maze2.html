@@ -40,6 +40,31 @@ var ROOM_NUM_Y = 15; // 縦の部屋数
 var MAZE_WIDTH = ROOM_SIZE * ROOM_NUM_X; // 迷路横サイズ
 var MAZE_HEIGHT = ROOM_SIZE * ROOM_NUM_Y; // 迷路縦サイズ
 var OFFSET = ROOM_SIZE / 2;
+// アセット
+var ASSETS = {
+  // 画像
+  image: {
+    'tile': 'https://cdn.jsdelivr.net/gh/alkn203/assets_etc@master/tiles3.png',
+  },
+};
+// マップデータ
+var MAP = [
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1]];
+
 // メインシーン
 phina.define('MainScene', {
   superClass: 'DisplayScene',
@@ -52,6 +77,13 @@ phina.define('MainScene', {
     });
     // 背景色
     this.backgroundColor = 'gray';
+// マップクラス
+    this.map = phina.util.Map({
+      tileWidth: TILE_SIZE,
+      tileHeight: TILE_SIZE,
+      imageName: 'tile',
+      mapData: MAP,
+    }).addChildTo(this);
     // グリッド
     var gx = Grid(MAZE_WIDTH, ROOM_NUM_X);
     var gy = Grid(MAZE_HEIGHT, ROOM_NUM_Y);
