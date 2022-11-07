@@ -79,8 +79,8 @@ phina.define('MainScene', {
     this.backgroundColor = 'gray';
 // マップクラス
     this.map = phina.util.Map({
-      tileWidth: TILE_SIZE,
-      tileHeight: TILE_SIZE,
+      tileWidth: ROOM_SIZE,
+      tileHeight: ROOM_SIZE,
       imageName: 'tile',
       mapData: MAP,
     }).addChildTo(this);
@@ -244,6 +244,7 @@ phina.main(function() {
     startLabel: 'main',
     width: MAZE_WIDTH,
     height: MAZE_HEIGHT,
+    assets: ASSETS,
   });
   app.run();
 });</script>
