@@ -30,7 +30,7 @@ phina.define('MainScene', {
     
     this.glLayer = phina.gl2d.GLLayer().addChildTo(this);
     // ブロックグループ
-    this.blockGroup = DisplayElement().addChildTo(this);
+    this.blockGroup = DisplayElement().addChildTo(this.glLayer);
     // パドル
     this.paddle = Paddle().addChildTo(this.glLayer);
     this.paddle.x = this.gx.center();
