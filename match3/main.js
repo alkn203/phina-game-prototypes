@@ -1,33 +1,4 @@
-<!doctype html>
- 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    
-    <title>Forked: Match 3</title>
-    <meta name="description" content="${description}" />
-    
-    <style>*, *:before, *:after {
-  box-sizing: border-box; 
-}
-html {
-  font-size: 62.5%;
-}
-body {
-  color: #444;
-  background-color: hsl(0, 0%, 96%);
-}
-h1 {
-  font-size: 1.8rem;
-}
-
-</style>
-  </head>
-  <body>
-    <script src="https://cdn.jsdelivr.net/gh/phinajs/phina.js@v0.2.3/build/phina.js"></script>
-    <script>phina.globalize();
+phina.globalize();
 // アセット
 const ASSETS = {
   // 画像
@@ -47,7 +18,7 @@ const GEM_OFFSET = GEM_SIZE / 2;
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
-  init: function() {
+  init: function(param) {
     // 親クラス初期化
     this.superInit({
       width: SCREEN_WIDTH,
@@ -78,25 +49,23 @@ phina.define('MainScene', {
     this.grid = grid;
     //ジェム初期化
     this.initGem();
+    // 画面外ジェム作成
+    this.initHiddenGem();
   },
   // ジェム初期化
   initGem: function() {
     // 3つ並び以上があれば仕切り直し
-    if (this.isExistMatch3()) {
+    if (this.existMatch3()) {
       this.gemGroup.children.each((gem) => {
         // ランダムな色
-        gem.num = Random.randint(0, 6);
-        gem.frameIndex = gem.num; 
-        gem.mark = "normal";
+        gem.setRandomColor();
       });
+      // 再度呼び出し
       this.initGem();
     }
-    // 画面外ジェム配置
-    this.initHiddenGem();
   },
   // 画面外のジェム配置
   initHiddenGem: function() {
-    var self = this;
     // 一旦消す
     this.gemGroup.children.eraseIfAll((gem) => {
       if (gem.y < 0) {
@@ -104,17 +73,16 @@ phina.define('MainScene', {
       }
     });
     
-    GEM_NUM_X.times(function(spanX) {
-      GEM_NUM_X.times(function(spanY) {
-        var gem = Gem().addChildTo(self.gemGroup);
-        gem.num = Random.randint(0, 6);
-        gem.frameIndex = gem.num; 
-        gem.mark = "normal";
-        gem.x = self.grid.span(spanX) + GEM_OFFSET;
-        // 一画面文分上にずらす
-        gem.y = self.grid.span(spanY) + GEM_OFFSET - SCREEN_HEIGHT;
-        gem.dropCnt = 0;
-      });
+    GEM_NUM.times((i) => {
+      var sx = i % GEM_NUM_X;
+      var sy = Math.floor(i / GEM_NUM_X);
+    
+      var gem = Gem().addChildTo(this.gemGroup);
+      gem.x = this.grid.span(sx) + GEM_OFFSET;
+      // 一画面文分上にずらす
+      gem.y = this.grid.span(sy) + GEM_OFFSET - SCREEN_HEIGHT;
+      gem.setRandomColor();
+      gem.dropCnt = 0;
     });
   },
   // ペアの選択処理
@@ -122,8 +90,8 @@ phina.define('MainScene', {
     // 一つ目
     if (this.pair.length === 0) {
       // カーソル表示
-      var cursor1 = Cursor().addChildTo(this.cursorGroup);
-      cursor1.setPosition(gem.x, gem.y);
+      var c1 = Cursor().addChildTo(this.cursorGroup);
+      c1.setPosition(gem.x, gem.y);
       this.pair.push(gem);
       // 隣り合わせ以外を選択不可にする
       this.selectableNext();
@@ -131,8 +99,8 @@ phina.define('MainScene', {
     }
     // 二つ目
     if (this.pair.length === 1) {
-      cursor2 = Cursor().addChildTo(this.cursorGroup);
-      cursor2.setPosition(gem.x, gem.y);
+      var c2 = Cursor().addChildTo(this.cursorGroup);
+      c2.setPosition(gem.x, gem.y);
       this.pair.push(gem);
       // 入れ替え処理
       this.swapGem(false);
@@ -142,11 +110,11 @@ phina.define('MainScene', {
   selectableNext: function() {
     var gem = this.pair[0];
     // 一旦全てを選択不可に
-    this.gemGroup.children.each(function(gem) {
+    this.gemGroup.children.each((gem) => {
       gem.setInteractive(false);
     });
     
-    this.gemGroup.children.each(function(target) {
+    this.gemGroup.children.each((target) => {
       var dx = Math.abs(gem.x - target.x);
       var dy = Math.abs(gem.y - target.y);
       // 上下左右隣り合わせだけを選択可に
@@ -171,18 +139,18 @@ phina.define('MainScene', {
     // flowで非同期処理
     var flows = [];
     
-    var flow1 = Flow(function(resolve) {
+    var flow1 = Flow((resolve) => {
       // 入れ替えアニメーション
       g1.tweener.updateType = 'normal';
       g1.tweener.to({x: g2.x, y: g2.y}, 200)
-        .call(function() {
+        .call(() => {
           resolve();
         }).play();
     });
-    var flow2 = Flow(function(resolve) {
+    var flow2 = Flow((resolve) => {
       g2.tweener.updateType = 'normal';
       g2.tweener.to({x: g1.x, y: g1.y}, 200)
-        .call(function() {
+        .call(() => {
           resolve();
         }).play();
     });
@@ -190,27 +158,27 @@ phina.define('MainScene', {
     flows.push(flow1);
     flows.push(flow2);
     // 入れ替え後処理
-    Flow.all(flows).then(function(message) {
+    Flow.all(flows).then((message) => {
       if (second) {
-        self.pair.clear();
-        self.setGemSelectable(true);
+        this.pair.clear();
+        this.setGemSelectable(true);
       }
       else {
         //  3つ並びがあれば削除処理へ
-        if (self.isExistMatch3()) {
-          self.pair.clear();
-          self.removeGems();
+        if (this.existMatch3()) {
+          this.pair.clear();
+          this.removeGem();
         }
         else {
           // 戻りの入れ替え
-          self.swapGem(true);
+          this.swapGem(true);
         }
       }
     });
   },
   // 3つ並び以上存在チェック
-  isExistMatch3: function() {
-    this.gemGroup.children.each(function(gem) {
+  existMatch3: function() {
+    this.gemGroup.children.each((gem) => {
       // 画面に見えているジェムのみ
       if (gem.y > 0) {
         // 横方向
@@ -220,17 +188,17 @@ phina.define('MainScene', {
         this.checkVertical(gem);
         this.setMark();
       }
-    }, this);
+    });
     
     var result = false;
     
-    this.gemGroup.children.some(function(gem) {
+    this.gemGroup.children.some((gem) => {
       // 削除対象があれば
       if (gem.mark === "rmv") {
         result = true;
         return true;
       }
-    }, this);
+    });
     
     return result;
   },
@@ -260,7 +228,7 @@ phina.define('MainScene', {
   },
   // マークセット
   setMark: function() {
-    this.gemGroup.children.each(function(gem) {
+    this.gemGroup.children.each((gem) => {
       if (gem.mark === "tmp") {
         // 3つ並び以上なら削除マーク
         if (this.cnt > 2) {
@@ -269,41 +237,39 @@ phina.define('MainScene', {
           gem.mark = "normal";
         }
       }
-    }, this);
+    });
     
     this.cnt = 0;
   },
   // ジェムの削除処理
-  removeGems: function() {
-    var self = this;
-
-    this.gemGroup.children.each(function(gem) {
+  removeGem: function() {
+    this.gemGroup.children.each((gem) => {
       if (gem.mark === "rmv") {
         // 削除対象ジェムより上にあるジェムに落下回数をセット
-        self.gemGroup.children.each(function(target) {
+        this.gemGroup.children.each((target) => {
           if (target.y < gem.y && target.x === gem.x) {
             target.dropCnt++;
           }
         });
         // 消去アニメーション用ダミー作成
-        var dummy = Gem().addChildTo(self.dummyGroup);
+        var dummy = Gem().addChildTo(this.dummyGroup);
         dummy.setPosition(gem.x, gem.y);
         dummy.fill = gem.fill;
       }
     });
     // ジェム削除
-    this.gemGroup.children.eraseIfAll(function(gem) {
+    this.gemGroup.children.eraseIfAll((gem) => {
       if (gem.mark === "rmv") {
         return true;
       }
     });
     var flows = [];
     // flowで非同期処理
-    this.dummyGroup.children.each(function(dummy) {
-      var flow = Flow(function(resolve) {
+    this.dummyGroup.children.each((dummy) => {
+      var flow = Flow((resolve) => {
         dummy.tweener
              .to({scaleX: 0.2, scaleY: 0.2, ahpha: 0.2}, 200)
-             .call(function() {
+             .call(() => {
                dummy.remove();
                resolve('removed');
              }).play();
@@ -311,23 +277,22 @@ phina.define('MainScene', {
       flows.push(flow);
     });
     
-    Flow.all(flows).then(function(message) {
-      self.dropGems();
+    Flow.all(flows).then((message) => {
+      this.dropGems();
     });
   },
   // ジェムの落下処理
   dropGems: function() {
-    var self = this;
-    
     var flows = [];
-    this.gemGroup.children.each(function(gem) {
+    
+    this.gemGroup.children.each((gem) => {
       // 落下フラグがあるジェムを落下させる
       if (gem.dropCnt > 0) {
         // 落下アニメーション
-        var flow = Flow(function(resolve) {
+        var flow = Flow((resolve) => {
           gem.tweener.updateType = 'normal';
-          gem.tweener.by({y: gem.dropCnt * GEM_SIZE}, gem.dropCnt * 300)
-                     .call(function() {
+          gem.tweener.by({y: gem.dropCnt * GEM_SIZE}, gem.dropCnt * 200, 'easeInCubic')
+                     .call(() => {
                         gem.dropCnt = 0;
                         resolve('dropped');
                      }).play();
@@ -337,15 +302,15 @@ phina.define('MainScene', {
       }
     });
 
-    Flow.all(flows).then(function(message) {
+    Flow.all(flows).then((message) => {
       // 画面外のジェムを作り直す
-      self.initHiddenGem();
+      this.initHiddenGem();
       // 3並び再チェック
-      if (self.isExistMatch3()) {
-        self.removeGems();
+      if (this.existMatch3()) {
+        this.removeGem();
       }
       else {
-        self.setGemSelectable(true);
+        this.setGemSelectable(true);
       }
     });
   },
@@ -353,7 +318,7 @@ phina.define('MainScene', {
   getGem: function(pos) {
     var result = null;
     // 該当するジェムがあったらループを抜ける
-    this.gemGroup.children.some(function(gem) {
+    this.gemGroup.children.some((gem) => {
       if (gem.position.equals(pos)) {
         result = gem;
         return true;
@@ -363,7 +328,7 @@ phina.define('MainScene', {
   },
   // ジェムを選択可能にする
   setGemSelectable: function(b) {
-    this.gemGroup.children.each(function(gem) {
+    this.gemGroup.children.each((gem) => {
       gem.setInteractive(b);
     });
   },
@@ -381,6 +346,12 @@ phina.define('Gem', {
     // タッチされた時
     onpointend: function() {
       this.parent.parent.selectPair(this);
+    },
+    // ランダムな色セット
+    setRandomColor: function() {
+      this.num = Random.randint(0, 6);
+      this.frameIndex = this.num;
+      this.mark = 'normal'
     },
 });
 // カーソルクラス
@@ -405,9 +376,7 @@ phina.main(function() {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
     assets: ASSETS,
+    fps: 60,
   });
   app.run();
-});</script>
-  </body>
-</html>
-
+});
