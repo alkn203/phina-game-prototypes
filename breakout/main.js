@@ -27,16 +27,14 @@ phina.define('MainScene', {
     // グリッド
     this.gx = Grid(SCREEN_WIDTH, 10);
     this.gy = Grid(SCREEN_HEIGHT, 30);
-    
-    this.glLayer = phina.gl2d.GLLayer().addChildTo(this);
     // ブロックグループ
-    this.blockGroup = DisplayElement().addChildTo(this.glLayer);
+    this.blockGroup = DisplayElement().addChildTo(this);
     // パドル
-    this.paddle = Paddle().addChildTo(this.glLayer);
+    this.paddle = Paddle().addChildTo(this);
     this.paddle.x = this.gx.center();
     this.paddle.y = this.gy.span(26);
     // ボール
-    this.ball = Ball().addChildTo(this.glLayer);
+    this.ball = Ball().addChildTo(this);
     this.ball.x = this.gx.center();
     this.ball.y = this.gy.center(2);
     // ボールの初速度
