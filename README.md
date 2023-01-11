@@ -19,11 +19,11 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/minesweeper/)
 
-## Invader
+## Match3
 
-![minesweeper](https://alkn203.github.io/phina-game-prototypes/images/minesweeper.png)
+![match3](https://alkn203.github.io/phina-game-prototypes/images/match3.png)
 
-[play](https://alkn203.github.io/phina-game-prototypes/invader/)
+[play](https://alkn203.github.io/phina-game-prototypes/match3/)
 
 # LICENSE
 MIT
