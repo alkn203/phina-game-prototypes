@@ -3,7 +3,7 @@ phina.globalize();
 const ASSETS = {
   // 画像
   image: {
-    'gem': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/match3/assets/gem.png',
+    'gem': 'assets/gem.png',
   },
 };
 // 定数
