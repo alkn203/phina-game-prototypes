@@ -7,8 +7,6 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/15puzzle/)
 
-[runstant](https://runstant.com/alkn203/projects/423efcc6)
-
 ## Breakout
 
 ![breakout](https://alkn203.github.io/phina-game-prototypes/images/breakout.png)
