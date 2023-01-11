@@ -1,16 +1,16 @@
 phina.globalize();
 // 定数
-var SCREEN_WIDTH = 640;            // 画面横サイズ
-var SCREEN_HEIGHT = 960;           // 画面縦サイズ
-var PIECE_SIZE = SCREEN_WIDTH / 4; // グリッドのサイズ
-var PIECE_NUM = 16;                // ピース数
-var PIECE_NUM_X = 4;               // 横のピース数
-var PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
+const SCREEN_WIDTH = 640;            // 画面横サイズ
+const SCREEN_HEIGHT = 960;           // 画面縦サイズ
+const PIECE_SIZE = SCREEN_WIDTH / 4; // グリッドのサイズ
+const PIECE_NUM = 16;                // ピース数
+const PIECE_NUM_X = 4;               // 横のピース数
+const PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
 // アセット
-var ASSETS = {
+const ASSETS = {
   // 画像
   image: {
-    'pieces': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/15puzzle/assets/pieces.png',
+    'pieces': 'assets/pieces.png',
   },
 };
 // メインシーン
@@ -31,34 +31,34 @@ phina.define('MainScene', {
   },
   // ピース配置
   locatePieces: function() {
-    var self = this;
-    
-    PIECE_NUM.times(function(i) {
+    PIECE_NUM.times((i) => {
       // グリッド配置用のインデックス値算出
-      var xIndex = i % PIECE_NUM_X;
-      var yIndex = Math.floor(i / PIECE_NUM_X);
+      var sx = i % PIECE_NUM_X;
+      var sy = Math.floor(i / PIECE_NUM_X);
       // 番号
       var num = i + 1;
       // ピース作成
       var piece = Piece(num).addChildTo(self.pieceGroup);
       // Gridを利用して配置
-      piece.x = self.grid.span(xIndex) + PIECE_OFFSET;
-      piece.y = self.grid.span(yIndex) + PIECE_OFFSET;
+      piece.x = self.grid.span(sx) + PIECE_OFFSET;
+      piece.y = self.grid.span(sy) + PIECE_OFFSET;
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
-      piece.onpointend = function() {
+      piece.onpointend = () => {
         // ピース移動処理
-        self.movePiece(this);
+        this.movePiece(this);
       };
       // 16番のピースは非表示
-      if (num === 16) piece.hide();
+      if (num === 16) {
+        piece.hide();
+      }
     });
   },
   // 16番ピース（空白）を取得
   getBlankPiece: function() {
     var result = null;
-    this.pieceGroup.children.some(function(piece) {
+    this.pieceGroup.children.some((piece) => {
       // 16番ピースを結果に格納
       if (piece.num === 16) {
         result = piece;
