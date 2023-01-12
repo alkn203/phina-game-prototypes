@@ -40,14 +40,14 @@ phina.define('MainScene', {
       // ピース作成
       var piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
-      piece.x = self.grid.span(sx) + PIECE_OFFSET;
-      piece.y = self.grid.span(sy) + PIECE_OFFSET;
+      piece.x = this.grid.span(sx) + PIECE_OFFSET;
+      piece.y = this.grid.span(sy) + PIECE_OFFSET;
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
       piece.onpointend = () => {
         // ピース移動処理
-        this.movePiece(this);
+        this.movePiece(piece);
       };
       // 16番のピースは非表示
       if (num === 16) {
