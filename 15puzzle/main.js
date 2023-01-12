@@ -17,7 +17,7 @@ const ASSETS = {
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
-  init: function() {
+  init: function () {
     // 親クラス初期化
     this.superInit();
     // 背景色
@@ -26,11 +26,11 @@ phina.define('MainScene', {
     this.grid = Grid(SCREEN_WIDTH, PIECE_NUM_X);
     // ピースグループ
     this.pieceGroup = DisplayElement().addChildTo(this);
-    
+
     this.locatePieces();
   },
   // ピース配置
-  locatePieces: function() {
+  locatePieces: function () {
     PIECE_NUM.times((i) => {
       // グリッド配置用のインデックス値算出
       var sx = i % PIECE_NUM_X;
@@ -38,7 +38,7 @@ phina.define('MainScene', {
       // 番号
       var num = i + 1;
       // ピース作成
-      var piece = Piece(num).addChildTo(self.pieceGroup);
+      var piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
       piece.x = self.grid.span(sx) + PIECE_OFFSET;
       piece.y = self.grid.span(sy) + PIECE_OFFSET;
@@ -56,7 +56,7 @@ phina.define('MainScene', {
     });
   },
   // 16番ピース（空白）を取得
-  getBlankPiece: function() {
+  getBlankPiece: function () {
     var result = null;
     this.pieceGroup.children.some((piece) => {
       // 16番ピースを結果に格納
@@ -68,15 +68,15 @@ phina.define('MainScene', {
     return result;
   },
   // ピースの移動処理
-  movePiece: function(piece) {
+  movePiece: function (piece) {
     // 空白ピースを得る
     var blank = this.getBlankPiece();
     // x, yの座標差の絶対値
     var dx = Math.abs(piece.x - blank.x);
     var dy = Math.abs(piece.y - blank.y);
     // 隣り合わせの判定
-    if ((piece.x === blank.x && dy === PIECE_SIZE) || 
-        (piece.y === blank.y && dx === PIECE_SIZE)) {
+    if ((piece.x === blank.x && dy === PIECE_SIZE) ||
+      (piece.y === blank.y && dx === PIECE_SIZE)) {
       // タッチされたピース位置を記憶
       var touchX = piece.x;
       var touchY = piece.y;
@@ -90,18 +90,18 @@ phina.define('MainScene', {
 phina.define('Piece', {
   // Spriteを継承
   superClass: 'Sprite',
-    // コンストラクタ
-    init: function(num) {
-      // 親クラス初期化
-      this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
-      // 数字
-      this.num = num;
-      // フレーム指定
-      this.frameIndex = this.num - 1;
-    },
+  // コンストラクタ
+  init: function (num) {
+    // 親クラス初期化
+    this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
+    // 数字
+    this.num = num;
+    // フレーム指定
+    this.frameIndex = this.num - 1;
+  },
 });
 // メイン
-phina.main(function() {
+phina.main(function () {
   var app = GameApp({
     startLabel: 'main',
     // アセット読み込み
