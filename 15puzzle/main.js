@@ -33,12 +33,12 @@ phina.define('MainScene', {
   locatePieces: function () {
     PIECE_NUM.times((i) => {
       // グリッド配置用のインデックス値算出
-      var sx = i % PIECE_NUM_X;
-      var sy = Math.floor(i / PIECE_NUM_X);
+      const sx = i % PIECE_NUM_X;
+      const sy = Math.floor(i / PIECE_NUM_X);
       // 番号
-      var num = i + 1;
+      const num = i + 1;
       // ピース作成
-      var piece = Piece(num).addChildTo(this.pieceGroup);
+      const piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
       piece.y = this.grid.span(sy) + PIECE_OFFSET;
@@ -57,7 +57,7 @@ phina.define('MainScene', {
   },
   // 16番ピース（空白）を取得
   getBlankPiece: function () {
-    var result = null;
+    let result = null;
     this.pieceGroup.children.some((piece) => {
       // 16番ピースを結果に格納
       if (piece.num === 16) {
@@ -70,18 +70,18 @@ phina.define('MainScene', {
   // ピースの移動処理
   movePiece: function (piece) {
     // 空白ピースを得る
-    var blank = this.getBlankPiece();
+    const blank = this.getBlankPiece();
     // x, yの座標差の絶対値
-    var dx = Math.abs(piece.x - blank.x);
-    var dy = Math.abs(piece.y - blank.y);
+    const dx = Math.abs(piece.x - blank.x);
+    const dy = Math.abs(piece.y - blank.y);
     // 隣り合わせの判定
     if ((piece.x === blank.x && dy === PIECE_SIZE) ||
       (piece.y === blank.y && dx === PIECE_SIZE)) {
       // タッチされたピース位置を記憶
-      var touchX = piece.x;
-      var touchY = piece.y;
-      // ピース入れ替え処理
-      piece.setPosition(blank.x, blank.y);
+      const touchX = piece.x;
+      const touchY = piece.y;
+      // ピース移動処理
+      piece.tweener.to({x:blank.x, y:blank.y}, 200).play()
       blank.setPosition(touchX, touchY);
     }
   },
@@ -102,7 +102,7 @@ phina.define('Piece', {
 });
 // メイン
 phina.main(function () {
-  var app = GameApp({
+  const app = GameApp({
     startLabel: 'main',
     // アセット読み込み
     assets: ASSETS,
