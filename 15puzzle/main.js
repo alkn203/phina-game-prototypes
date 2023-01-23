@@ -10,7 +10,7 @@ const PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
 const ASSETS = {
   // 画像
   image: {
-    'pieces': 'assets/pieces.png',
+    'pieces': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/15puzzle/assets/pieces.png',
   },
 };
 // メインシーン
@@ -42,6 +42,8 @@ phina.define('MainScene', {
       // Gridを利用して配置
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
       piece.y = this.grid.span(sy) + PIECE_OFFSET;
+      // グリッド上のインデックス値
+      piece.indexPos = Vector2(sx, sy);
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
@@ -72,19 +74,33 @@ phina.define('MainScene', {
     // 空白ピースを得る
     const blank = this.getBlankPiece();
     // x, yの座標差の絶対値
-    const dx = Math.abs(piece.x - blank.x);
-    const dy = Math.abs(piece.y - blank.y);
+    const dx = Math.abs(piece.indexPos.x - blank.indexPos.x);
+    const dy = Math.abs(piece.indexPos.y - blank.indexPos.y);
     // 隣り合わせの判定
-    if ((piece.x === blank.x && dy === PIECE_SIZE) ||
-      (piece.y === blank.y && dx === PIECE_SIZE)) {
+    if ((piece.indexPos.x === blank.indexPos.x && dy === 1) ||
+      (piece.indexPos.y === blank.indexPos.y && dx === 1)) {
       // タッチされたピース位置を記憶
-      const touchX = piece.x;
-      const touchY = piece.y;
+      const tx = piece.x;
+      const ty = piece.y;
       // ピース移動処理
-      piece.tweener.to({x:blank.x, y:blank.y}, 200).play()
-      blank.setPosition(touchX, touchY);
+      piece.tweener
+           .to({x:blank.x, y:blank.y}, 100)
+           .call(() => {
+             blank.setPosition(tx, ty);
+             piece.indexPos = this.coordToIndex(piece.position);
+             blank.indexPos = this.coordToIndex(blank.position);
+           })
+           .play();
     }
   },
+  // 座標値からインデックス値へ変換
+  coordToIndex: function (vec) {
+    var x = Math.floor(vec.x / PIECE_SIZE);
+    var y = Math.floor(vec.y / PIECE_SIZE);
+    return Vector2(x, y);
+  },
+  
+
 });
 // ピースクラス
 phina.define('Piece', {
@@ -98,6 +114,8 @@ phina.define('Piece', {
     this.num = num;
     // フレーム指定
     this.frameIndex = this.num - 1;
+    // 位置インデックス
+    this.indexPos = Vector2.ZERO;
   },
 });
 // メイン

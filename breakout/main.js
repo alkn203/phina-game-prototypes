@@ -105,7 +105,7 @@ phina.define('MainScene', {
         ball.flipY();
         ball.bottom = paddle.top;
       }
-　　　　// 横方向の反射を決定
+      // 横方向の反射を決定
       var x = (ball.x - paddle.x) / BALL_XDIR_ADJ;
       ball.setDirSpeed(x, ball.vec.y, BALL_SPEED);
     }
