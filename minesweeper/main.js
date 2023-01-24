@@ -10,7 +10,7 @@ const PANEL_FRAME = 10; // 初期パネルのフレームインデックス
 const BOMB_FRAME = 11; // 爆弾のフレームインデックス 
 const EXP_FRAME = 12; // 爆弾爆発のフレームインデックス 
 // アセット
-var ASSETS = {
+const ASSETS = {
   // 画像
   image: {
     'minespsheet': 'assets/minespsheet.png',
@@ -26,7 +26,7 @@ phina.define('MainScene', {
     // グリッド
     const grid = Grid(SCREEN_SIZE, PANEL_NUM_XY);
     // グループ
-    const panelGroup = DisplayElement().addChildTo(this);
+    this.panelGroup = DisplayElement().addChildTo(this);
     // 爆弾位置をランダムに決めた配列を作成
     const bombs = [];
     PANEL_NUM.times(() => {
@@ -35,35 +35,34 @@ phina.define('MainScene', {
     bombs.fill(true, 0, 10).shuffle();
 
     var self = this;
-    // ピース配置
-    PANEL_NUM_XY.times(function(spanX) {
-      PANEL_NUM_XY.times(function(spanY) {
-        // パネル作成
-        var panel = Panel().addChildTo(panelGroup);
-        // Gridを利用して配置
-        panel.x = grid.span(spanX) + PANEL_OFFSET;
-        panel.y = grid.span(spanY) + PANEL_OFFSET;
-        // パネルに爆弾情報を紐づける
-        panel.isBomb = bombs[spanX * PANEL_NUM_XY + spanY];
-        // パネルタッチ時
-        panel.onpointstart = function() {
-          // パネルを開く
-          self.openPanel(panel);
-          // クリア判定
-          self.checkClear();
-        };
-      });
+    // パネル配置
+    PANEL_NUM.times((i) => {
+      // グリッド配置用のインデックス値算出
+      const = i % PANEL_NUM_XY;
+      const = Math.floor(i / PANEL_NUM_XY);
+      // パネル作成
+      const panel = Panel().addChildTo(this.panelGroup);
+      // Gridを利用して配置
+      panel.x = grid.span(sx) + PANEL_OFFSET;
+      panel.y = grid.span(sy) + PANEL_OFFSET;
+      // パネルに爆弾情報を紐づける
+      panel.isBomb = bombs[i];
+      // パネルタッチ時
+      panel.onpointstart = () => {
+        // パネルを開く
+        this.openPanel(panel);
+        // クリア判定
+        this.checkClear();
+      };
     });
-    // 参照用
-    this.panelGroup = panelGroup;
     // クリア判定用
     this.oCount = 0;
   },
   // クリア判定
   checkClear: function() {
-    if (this.oCount === PANEL_NUM_XY * PANEL_NUM_XY - BOMB_NUM) {
+    if (this.oCount === PANEL_NUM - BOMB_NUM) {
       // パネルを選択不可に
-      this.panelGroup.children.each(function(panel) {
+      this.panelGroup.children.each((panel) => {
         panel.setInteractive(false);
       });
     }
@@ -77,7 +76,9 @@ phina.define('MainScene', {
       return;
     }
     // 既に開かれていたら何もしない
-    if (panel.isOpen) return;
+    if (panel.isOpen) {
+      return;
+    }
     // 開いたとフラグを立てる
     panel.isOpen = true;
     this.oCount++;
