@@ -1,18 +1,19 @@
 phina.globalize();
 // 定数
-var PANEL_SIZE = 64; // パネルサイズ
-var PANEL_NUM_XY = 9; // 縦横のパネル数
-var SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_XY; // 画面縦横サイズ
-var PANEL_OFFSET = PANEL_SIZE / 2; // オフセット値
-var BOMB_NUM = 10; // 爆弾数
-var PANEL_FRAME = 10; // 初期パネルのフレームインデックス 
-var BOMB_FRAME = 11; // 爆弾のフレームインデックス 
-var EXP_FRAME = 12; // 爆弾爆発のフレームインデックス 
+const PANEL_SIZE = 64; // パネルサイズ
+const PANEL_NUM_XY = 9; // 縦横のパネル数
+const PANEL_NUM = PANEL_NUM_XY * 2 // 全体のパネル数
+const SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_XY; // 画面縦横サイズ
+const PANEL_OFFSET = PANEL_SIZE / 2; // オフセット値
+const BOMB_NUM = 10; // 爆弾数
+const PANEL_FRAME = 10; // 初期パネルのフレームインデックス 
+const BOMB_FRAME = 11; // 爆弾のフレームインデックス 
+const EXP_FRAME = 12; // 爆弾爆発のフレームインデックス 
 // アセット
 var ASSETS = {
   // 画像
   image: {
-    'minespsheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/minesweeper/assets/minespsheet.png',
+    'minespsheet': 'assets/minespsheet.png',
   },
 };
 // メインシーン
@@ -23,12 +24,12 @@ phina.define('MainScene', {
     // 親クラス初期化
     this.superInit(options);
     // グリッド
-    var grid = Grid(SCREEN_SIZE, PANEL_NUM_XY);
+    const grid = Grid(SCREEN_SIZE, PANEL_NUM_XY);
     // グループ
-    var panelGroup = DisplayElement().addChildTo(this);
+    const panelGroup = DisplayElement().addChildTo(this);
     // 爆弾位置をランダムに決めた配列を作成
-    var bombs = [];
-    (PANEL_NUM_XY * PANEL_NUM_XY).times(function() {
+    const bombs = [];
+    PANEL_NUM.times(() => {
       bombs.push(false);
     });
     bombs.fill(true, 0, 10).shuffle();
