@@ -1,9 +1,9 @@
 phina.globalize();
 // 定数
 const PANEL_SIZE = 64; // パネルサイズ
-const PANEL_NUM_XY = 9; // 縦横のパネル数
-const PANEL_NUM = PANEL_NUM_XY * 2 // 全体のパネル数
-const SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_XY; // 画面縦横サイズ
+const PANEL_NUM_X = 9; // 横のパネル数
+const PANEL_NUM = PANEL_NUM_X * PANEL_NUM_X; // 全体のパネル数
+const SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_X; // 画面縦横サイズ
 const PANEL_OFFSET = PANEL_SIZE / 2; // オフセット値
 const BOMB_NUM = 10; // 爆弾数
 const PANEL_FRAME = 10; // 初期パネルのフレームインデックス 
@@ -24,7 +24,7 @@ phina.define('MainScene', {
     // 親クラス初期化
     this.superInit(options);
     // グリッド
-    const grid = Grid(SCREEN_SIZE, PANEL_NUM_XY);
+    const grid = Grid(SCREEN_SIZE, PANEL_NUM_X);
     // グループ
     this.panelGroup = DisplayElement().addChildTo(this);
     // 爆弾位置をランダムに決めた配列を作成
@@ -38,8 +38,8 @@ phina.define('MainScene', {
     // パネル配置
     PANEL_NUM.times((i) => {
       // グリッド配置用のインデックス値算出
-      const sx = i % PANEL_NUM_XY;
-      const sy = Math.floor(i / PANEL_NUM_XY);
+      const sx = i % PANEL_NUM_X;
+      const sy = Math.floor(i / PANEL_NUM_X);
       // パネル作成
       const panel = Panel().addChildTo(this.panelGroup);
       // Gridを利用して配置
