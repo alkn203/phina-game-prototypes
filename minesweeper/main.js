@@ -106,7 +106,7 @@ phina.define('MainScene', {
           const pos = panel.indexpos.add(Vector2(i, j));
           const target = this.getPanel(pos);
           if (target) {
-            self.openPanel(target);
+            this.openPanel(target);
           }
         });
       });
