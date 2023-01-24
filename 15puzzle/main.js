@@ -80,13 +80,12 @@ phina.define('MainScene', {
     if ((piece.indexPos.x === blank.indexPos.x && dy === 1) ||
       (piece.indexPos.y === blank.indexPos.y && dx === 1)) {
       // タッチされたピース位置を記憶
-      const tx = piece.x;
-      const ty = piece.y;
+      const tPos = Vector2(piece.x, piece.y);
       // ピース移動処理
       piece.tweener
            .to({x:blank.x, y:blank.y}, 100)
            .call(() => {
-             blank.setPosition(tx, ty);
+             blank.setPosition(tPos.x, tPos.y);
              piece.indexPos = this.coordToIndex(piece.position);
              blank.indexPos = this.coordToIndex(blank.position);
            })
@@ -95,8 +94,8 @@ phina.define('MainScene', {
   },
   // 座標値からインデックス値へ変換
   coordToIndex: function (vec) {
-    var x = Math.floor(vec.x / PIECE_SIZE);
-    var y = Math.floor(vec.y / PIECE_SIZE);
+    const x = Math.floor(vec.x / PIECE_SIZE);
+    const y = Math.floor(vec.y / PIECE_SIZE);
     return Vector2(x, y);
   },
   
