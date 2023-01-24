@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "localhost に対して Chrome を起動する",
-            "url": "http://127.0.0.1:5500/15puzzle/index.html",
+            "url": "http://127.0.0.1:5500/minesweeper/index.html",
             "webRoot": "${workspaceFolder}"
         }
     ]
