@@ -87,13 +87,11 @@ phina.define('MainScene', {
     
     let bombs = 0;
     const indexs = [-1, 0, 1];
-    var self = this;
     // 周りのパネルの爆弾数をカウント
-    indexs.each(function(i) {
-      indexs.each(function(j) {
-        var x = panel.x + i * PANEL_SIZE;
-        var y = panel.y + j * PANEL_SIZE;
-        var target = self.getPanel(x, y);
+    indexs.each((i) => {
+      indexs.each((j) => {
+        const pos = panel.indexpos.add(Vector2(i, j));
+        const target = this.getPanel(pos);
         if (target && target.isBomb) {
           bombs++;
         }
@@ -103,11 +101,10 @@ phina.define('MainScene', {
     panel.setFrameIndex(bombs);
     // 周りに爆弾がなければ再帰的に調べる
     if (bombs === 0) {
-      indexs.each(function(i) {
-        indexs.each(function(j) {
-          var x = panel.x + i * PANEL_SIZE;
-          var y = panel.y + j * PANEL_SIZE;
-          var target = self.getPanel(x, y);
+      indexs.each((i) => {
+        indexs.each((j) => {
+          const pos = panel.indexpos.add(Vector2(i, j));
+          const target = this.getPanel(pos);
           if (target) {
             self.openPanel(target);
           }
@@ -115,12 +112,12 @@ phina.define('MainScene', {
       });
     }
   },
-  // 指定された位置のパネルを得る
-  getPanel: function(x, y) {
-    var result = null;
+  // 指定されたインデックス位置のパネルを得る
+  getPanel: function(pos) {
+    let result = null;
     
-    this.panelGroup.children.some(function(panel) {
-      if (panel.x === x && panel.y === y) {
+    this.panelGroup.children.some((panel) => {
+      if (panel.indxPos.eaquals(pos)) {
         result = panel;
         return true;
       } 
@@ -129,9 +126,7 @@ phina.define('MainScene', {
   },
   // 爆弾を全て表示する
   showAllBombs: function() {
-    var self = this;
-    
-    this.panelGroup.children.each(function(panel) {
+    this.panelGroup.children.each((panel) => {
       panel.setInteractive(false);
       
       if (panel.isBomb && panel.frameIndex === PANEL_FRAME) {
@@ -154,11 +149,13 @@ phina.define('Panel', {
       this.setInteractive(true);
       // 初期表示
       this.setFrameIndex(PANEL_FRAME);
+      // インデックス位置
+      this.indexPos = Vector2.ZERO
     },
 });
 // メイン
 phina.main(function() {
-  var app = GameApp({
+  const app = GameApp({
     // メイン画面からスタート
     startLabel: 'main', 
     width: SCREEN_SIZE,
