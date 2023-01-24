@@ -38,8 +38,8 @@ phina.define('MainScene', {
     // パネル配置
     PANEL_NUM.times((i) => {
       // グリッド配置用のインデックス値算出
-      const = i % PANEL_NUM_XY;
-      const = Math.floor(i / PANEL_NUM_XY);
+      const sx = i % PANEL_NUM_XY;
+      const sy = Math.floor(i / PANEL_NUM_XY);
       // パネル作成
       const panel = Panel().addChildTo(this.panelGroup);
       // Gridを利用して配置
@@ -85,8 +85,8 @@ phina.define('MainScene', {
     // タッチ不可にする
     panel.setInteractive(false);
     
-    var bombs = 0;
-    var indexs = [-1, 0, 1];
+    let bombs = 0;
+    const indexs = [-1, 0, 1];
     var self = this;
     // 周りのパネルの爆弾数をカウント
     indexs.each(function(i) {
