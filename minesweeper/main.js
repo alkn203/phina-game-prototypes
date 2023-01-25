@@ -93,9 +93,8 @@ phina.define('MainScene', {
     // 周りのパネルの爆弾数をカウント
     indexs.each((i) => {
       indexs.each((j) => {
-        const x = panel.indexPos.x + i;
-        const y = panel.indexPos.y + j;
-        const target = this.getPanel(x, y);
+        const pos = Vector2.add(panel.indexPos, Vector2(i, j));
+        const target = this.getPanel(pos);
         if (target && target.isBomb) {
           bombs++;
         }
@@ -105,24 +104,22 @@ phina.define('MainScene', {
     panel.setFrameIndex(bombs);
     // 周りに爆弾がなければ再帰的に調べる
     if (bombs === 0) {
-      indexs.each(function(i) {
-        indexs.each(function(j) {
-          const x = panel.indexPos.x + i;
-          const y = panel.indexPos.y + j;
-          const target = self.getPanel(x, y);
+      indexs.each((i) => {
+        indexs.each((j) => {
+          const pos = Vector2.add(panel.indexPos, Vector2(i, j));
           if (target) {
-            self.openPanel(target);
+            this.openPanel(target);
           }
         });
       });
     }
   },
   // 指定されたインデックス位置のパネルを得る
-  getPanel: function(x, y) {
+  getPanel: function(pos) {
     let result = null;
     
-    this.panelGroup.children.some(function(panel) {
-      if (panel.indexPos.x === x && panel.indexPos.y === y) {
+    this.panelGroup.children.some((panel) => {
+      if (panel.indexPos.equals(pos)){
         result = panel;
         return true;
       } 
