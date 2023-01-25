@@ -1,13 +1,13 @@
 phina.globalize();
 // 定数
-var SCREEN_WIDTH = 640;
-var SCREEN_HEIGHT = 960;
-var BLOCK_WIDTH = 64;
-var BLOCK_HEIGHT = 32;
-var BALL_SPEED = 6;
-var BALL_XDIR_ADJ = 6;
+const SCREEN_WIDTH = 640;
+const SCREEN_HEIGHT = 960;
+const BLOCK_WIDTH = 64;
+const BLOCK_HEIGHT = 32;
+const BALL_SPEED = 200;
+const BALL_XDIR_ADJ = 6;
 // アセット
-var ASSETS = {
+const ASSETS = {
   // 画像
   image: {
     'paddle': 'assets/paddle.png',
@@ -44,36 +44,36 @@ phina.define('MainScene', {
   },
   // ブロック配置
   locateBlocks: function() {
-    var gx = this.gx;
-    var gy = this.gy;
-    var dx = BLOCK_WIDTH / 2;
-    var dy = BLOCK_HEIGHT / 2;
-    var group = this.blockGroup;
+    const gx = this.gx;
+    const gy = this.gy;
+    const dx = BLOCK_WIDTH / 2;
+    const dy = BLOCK_HEIGHT / 2;
+    const group = this.blockGroup;
 
     Array.range(1, 9).each(function(i) {
       Array.range(2, 5).each(function(j) {
-        var block = Block().addChildTo(group);
+        const block = Block().addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
     });
     Array.range(1, 9).each(function(i) {
       Array.range(5, 8).each(function(j) {
-        var block = Block(1).addChildTo(group);
+        const block = Block(1).addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
     });
     Array.range(1, 9).each(function(i) {
       Array.range(8, 11).each(function(j) {
-        var block = Block(2).addChildTo(group);
+        const block = Block(2).addChildTo(group);
         block.setPosition(gx.span(i) + dx, gy.span(j) + dy);
       });
     });
   },
   //
   onpointmove: function(e) {
-    var paddle = this.paddle
+    const paddle = this.paddle
     // マウスのX座標を取得
-    var x = e.pointer.x;
+    const x = e.pointer.x;
     // パドル移動
     paddle.x = x;
     // 画面端からはみ出さないようにする
@@ -85,36 +85,36 @@ phina.define('MainScene', {
     }
   },
   // 毎フレーム処理
-  update: function() {
+  update: function(app) {
     //
-    this.hitTestBallOutside();
+    //this.hitTestBallOutside();
     this.hitTestBallPaddle();
-    this.hitTestBallBlock();
-    this.removeBlock();
-    this.ball.move();
-  },
+    //this.hitTestBallBlock();
+    //this.removeBlock();
+    this.ball.move(app.deltaTime);
+    },
   // ボールとパドルの当たり判定
   hitTestBallPaddle: function() {
-    var ball = this.ball;
-    var rect = ball.getNextRect();
-    var paddle = this.paddle;
+    const ball = this.ball;
+    //const rect = ball.getNextRect();
+    const paddle = this.paddle;
     // 矩形判定
-    if (Collision.testRectRect(rect, paddle)) {
+    if (Collision.testRectRect(ball, paddle)) {
       // 上からヒット
       if (ball.y < paddle.y) {
         ball.flipY();
         ball.bottom = paddle.top;
       }
       // 横方向の反射を決定
-      var x = (ball.x - paddle.x) / BALL_XDIR_ADJ;
+      const x = (ball.x - paddle.x) / BALL_XDIR_ADJ;
       ball.setDirSpeed(x, ball.vec.y, BALL_SPEED);
     }
   },
   // ボールとブロックの当たり判定
   hitTestBallBlock: function() {
-    var rect = this.ball.getNextRect();
-    var ball = this.ball;
-    var self = this;
+    const rect = this.ball.getNextRect();
+    const ball = this.ball;
+    const self = this;
     // ブロックグループをループ
     this.blockGroup.children.some(function(block) {
       // 矩形判定でヒット
@@ -238,8 +238,8 @@ phina.define('MainScene', {
   },
   // ボールと画面外との当たり判定
   hitTestBallOutside: function() {
-    var rect = this.ball.getNextRect();
-    var ball = this.ball;
+    const rect = this.ball.getNextRect();
+    const ball = this.ball;
     //
     if (rect.x < 0) {
       ball.left = 0;
@@ -271,7 +271,7 @@ phina.define('MainScene', {
   },
   // 指定された座標のブロックを返す
   getBlockByXY: function(x, y) {
-    var result = null;
+    let result = null;
 
     this.blockGroup.children.some(function(block) {
       if (block.x === x && block.y === y) {
@@ -304,16 +304,18 @@ phina.define('Ball', {
     // 親クラス初期化
     this.superInit('ball');
     // 速度
-    this.vec = Vector2(0, 0);
+    this.vec = Vector2.ZERO;
   },
   // ボールの向き速度を決定
   setDirSpeed: function(x, y, speed) {
-    var len = this.vec.length();
+    const len = this.vec.length();
     this.vec = Vector2(x, y).normalize().mul(speed);
   },
   // 移動
-  move: function() {
-    this.moveBy(this.vec.x, this.vec.y);
+  move: function(delta) {
+    this.x += (this.vec.x * delta / 1000) | 0;
+    this.y += (this.vec.y * delta / 1000) | 0;
+    //this.position = Vector2.add(this.position, this.vec.mul(delta / 1000));
   },
   // 横方向速度反転
   flipX: function() {
@@ -325,7 +327,7 @@ phina.define('Ball', {
   },
   // 次の移動先の矩形
   getNextRect() {
-    var rect = Rect(this.left + this.vec.x, this.top + this.vec.y, this.width, this.height);
+    const rect = Rect(this.left + this.vec.x, this.top + this.vec.y, this.width, this.height);
     return rect;
   },
 });
@@ -347,9 +349,7 @@ phina.define('Block', {
 });
 // メイン
 phina.main(function() {
-  var app = GameApp({
-    // fps設定
-    fps: 60,
+  const app = GameApp({
     // アセット読み込み
     assets: ASSETS,
   });
