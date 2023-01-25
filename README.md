@@ -7,17 +7,17 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/15puzzle/)
 
-## Breakout
-
-![breakout](https://alkn203.github.io/phina-game-prototypes/images/breakout.png)
-
-[play](https://alkn203.github.io/phina-game-prototypes/breakout/)
-
 ## MineSweeper
 
 ![minesweeper](https://alkn203.github.io/phina-game-prototypes/images/minesweeper.png)
 
 [play](https://alkn203.github.io/phina-game-prototypes/minesweeper/)
+
+## Breakout
+
+![breakout](https://alkn203.github.io/phina-game-prototypes/images/breakout.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/breakout/)
 
 ## Match3
 
