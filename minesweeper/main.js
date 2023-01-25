@@ -100,16 +100,17 @@ phina.define('MainScene', {
     // パネルに数を表示
     panel.setFrameIndex(bombs);
     // 周りに爆弾がなければ再帰的に調べる
-    /*if (bombs === 0) {
+    if (bombs === 0) {
       indexs.each((i) => {
         indexs.each((j) => {
           const pos = Vector2.add(panel.indexPos, Vector2(i, j));
+          const target = this.getPanel(pos);
           if (target) {
             this.openPanel(target);
           }
         });
       });
-    }*/
+    }
   },
   // 指定されたインデックス位置のパネルを得る
   getPanel: function(pos) {
