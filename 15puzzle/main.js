@@ -55,7 +55,7 @@ phina.define('MainScene', {
       if (num === 16) {
         piece.hide();
       }
-    });
+    }, this);
   },
   // 16番ピース（空白）を取得
   getBlankPiece: function () {
