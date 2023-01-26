@@ -26,12 +26,12 @@ phina.define('MainScene', {
     this.grid = Grid(SCREEN_WIDTH, PIECE_NUM_X);
     // ピースグループ
     this.pieceGroup = DisplayElement().addChildTo(this);
-
-    this.locatePieces();
+    // ピース配置
+    this.createPiece();
   },
-  // ピース配置
-  locatePieces: function () {
-    PIECE_NUM.times((i) => {
+  // ピース配置関数
+  createPiece: function () {
+    PIECE_NUM.times(function(i) {
       // グリッド配置用のインデックス値算出
       const sx = i % PIECE_NUM_X;
       const sy = Math.floor(i / PIECE_NUM_X);
@@ -47,10 +47,10 @@ phina.define('MainScene', {
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
-      piece.onpointend = () => {
+      piece.on('pointend', function() {
         // ピース移動処理
         this.movePiece(piece);
-      };
+      }, this);
       // 16番のピースは非表示
       if (num === 16) {
         piece.hide();
@@ -60,8 +60,8 @@ phina.define('MainScene', {
   // 16番ピース（空白）を取得
   getBlankPiece: function () {
     let result = null;
-    this.pieceGroup.children.some((piece) => {
-      // 16番ピースを結果に格納
+    this.pieceGroup.children.some(function(piece) {
+      // 16番ピースを結果に格納I
       if (piece.num === 16) {
         result = piece;
         return true;
@@ -84,11 +84,11 @@ phina.define('MainScene', {
       // ピース移動処理
       piece.tweener
            .to({x:blank.x, y:blank.y}, 100)
-           .call(() => {
+           .call(function() {
              blank.setPosition(tPos.x, tPos.y);
              piece.indexPos = this.coordToIndex(piece.position);
              blank.indexPos = this.coordToIndex(blank.position);
-           })
+           }, this)
            .play();
     }
   },
@@ -98,8 +98,6 @@ phina.define('MainScene', {
     const y = Math.floor(vec.y / PIECE_SIZE);
     return Vector2(x, y);
   },
-  
-
 });
 // ピースクラス
 phina.define('Piece', {
