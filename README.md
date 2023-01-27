@@ -13,6 +13,12 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/minesweeper/)
 
+## Breakout
+
+![breakout](https://alkn203.github.io/phina-game-prototypes/images/breakout.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/breakout/)
+
 ## Match3
 
 ![match3](https://alkn203.github.io/phina-game-prototypes/images/match3.png)
