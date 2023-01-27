@@ -46,7 +46,7 @@ phina.define('MainScene', {
     this.ball.vec = Vector2(1, 2);
     //
     const rect = RectangleShape().addChildTo(this);
-    rect.setPosition(this.gridX.center(), this.gridY.span(26);
+    rect.setPosition(this.gridX.center(), this.gridY.span(26));
     rect.onpointmove = function(e) {
       rect.x = e.pointer.x;
     };
