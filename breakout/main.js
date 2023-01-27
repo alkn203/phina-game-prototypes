@@ -109,11 +109,11 @@ phina.define('MainScene', {
   // ブロックとの当たり判定
   hitTestBlock: function() {
     const ball = this.ball;
-    //
+    // ブロックグループをループ
     this.blockGroup.children.some(function(block) {
       if (ball.hitTestElement(block)) {
         // 上から
-        if (ball.vec.y > 0 && block.top < ball.top) {
+        if (ball.vec.y > 0 && ball.top < block.top) {
           ball.bottom = block.top;
           ball.reflectY();
           return true;
@@ -122,6 +122,18 @@ phina.define('MainScene', {
         if (ball.vec.y < 0 && block.bottom < ball.bottom) {
           ball.top = block.bottom;
           ball.reflectY();
+          return true;
+        }
+        // 左から
+        if (ball.vec.x > 0 && ball.left < block.left) {
+          ball.right = block.left;
+          ball.reflectX();
+          return true;
+        }
+        // 右から
+        if (ball.vec.x < 0 && block.right < ball.right) {
+          ball.left = block.right;
+          ball.reflectX();
           return true;
         }
       }
