@@ -46,7 +46,11 @@ phina.define('MainScene', {
     //
     this.controller = CircleShape().addChildTo(this);
     this.controller.x = this.gridX.center();
-    this.controller.y = this.gridY.span(26);
+    this.controller.y = this.gridY.span(29);
+    this.controller.on('pointmove', (e) => {
+      const x = e.pointer.x;
+      this.controller.x = x;
+    });
 
   },
   // ブロック配置
