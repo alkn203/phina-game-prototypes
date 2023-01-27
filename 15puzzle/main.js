@@ -47,8 +47,9 @@ phina.define('MainScene', {
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
-      piece.on('pointend', function() {
-        piece.remove();
+      piece.on('pointend', () => {
+        // ピース移動処理
+        this.movePiece(piece);
       });
       // 16番のピースは非表示
       if (num === 16) {
