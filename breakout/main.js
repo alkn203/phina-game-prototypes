@@ -72,6 +72,8 @@ phina.define('MainScene', {
     this.hitTestPaddle();
     // 壁との当たり判定
     this.hitTestWall();
+    // ブロックとの当たり判定
+    this.hitTestBlock();
   },
   // パドルとの当たり判定
   hitTestPaddle: function() {
@@ -102,6 +104,14 @@ phina.define('MainScene', {
     if (this.ball.right > SCREEN_WIDTH) {
       this.ball.right = SCREEN_WIDTH;
       this.ball.reflectX();
+    }
+  },
+  // ブロックとの当たり判定
+  hitTestBlock: function() {
+    
+    if (this.ball.hitTestElement(this.paddle)) {
+      // 反射
+      this.ball.reflectY();
     }
   },
 });
