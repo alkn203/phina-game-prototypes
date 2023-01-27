@@ -116,24 +116,29 @@ phina.define('MainScene', {
         if (ball.vec.y > 0 && ball.top < block.top) {
           ball.bottom = block.top;
           ball.reflectY();
+          // ブロック削除
+          block.remove();
           return true;
         }
         // 下から
         if (ball.vec.y < 0 && block.bottom < ball.bottom) {
           ball.top = block.bottom;
           ball.reflectY();
+          block.remove();
           return true;
         }
         // 左から
         if (ball.vec.x > 0 && ball.left < block.left) {
           ball.right = block.left;
           ball.reflectX();
+          block.remove();
           return true;
         }
         // 右から
         if (ball.vec.x < 0 && block.right < ball.right) {
           ball.left = block.right;
           ball.reflectX();
+          block.remove();
           return true;
         }
       }
