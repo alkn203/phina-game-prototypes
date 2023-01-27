@@ -48,6 +48,7 @@ phina.define('MainScene', {
       piece.setInteractive(true);
       // タッチされた時の処理
       piece.on('pointend', function() {
+        this.exit()
         // ピース移動処理
         this.movePiece(piece);
       }, this);
