@@ -78,8 +78,8 @@ phina.define('MainScene', {
   // マウス移動時処理
   onpointmove: function(e) {
     //
-    const x = e.pointer.x;
-    this.paddle.x = x;
+    const dx = e.pointer.dx;
+    this.paddle.x += dx;
   },
   // パドルとの当たり判定
   hitTestPaddle: function() {
