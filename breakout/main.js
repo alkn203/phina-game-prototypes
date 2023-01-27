@@ -42,7 +42,7 @@ phina.define('MainScene', {
     // ブロック配置
     this.createBlock();
     // ボール初期移動量
-    this.ball.vec = Vector2(1, 5);
+    this.ball.vec = Vector2(1, 2);
   },
   // ブロック配置
   createBlock: function() {
