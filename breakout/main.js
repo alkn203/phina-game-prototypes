@@ -44,6 +44,12 @@ phina.define('MainScene', {
     this.createBlock();
     // ボール初期移動量
     this.ball.vec = Vector2(1, 2);
+    //
+    const rect = RectangleShape().addChildTo(this);
+    rect.setPosition(this.gridX.center(), this.gridY.span(26);
+    rect.onpointmove = function(e) {
+      rect.x = e.pointer.x;
+    };
   },
   // ブロック配置
   createBlock: function() {
