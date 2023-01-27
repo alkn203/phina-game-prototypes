@@ -29,12 +29,12 @@ phina.define('MainScene', {
     this.panelGroup = DisplayElement().addChildTo(this);
     // 爆弾位置をランダムに決めた配列を作成
     const bombs = [];
-    PANEL_NUM.times(() => {
+    PANEL_NUM.times(function() {
       bombs.push(false);
     });
     bombs.fill(true, 0, 10).shuffle();
     // パネル配置
-    PANEL_NUM.times((i) => {
+    PANEL_NUM.times(function(i) {
       // グリッド配置用のインデックス値算出
       const sx = i % PANEL_NUM_X;
       const sy = Math.floor(i / PANEL_NUM_X);
@@ -48,12 +48,12 @@ phina.define('MainScene', {
       // パネルに爆弾情報を紐づける
       panel.isBomb = bombs[i];
       // パネルタッチ時
-      panel.onpointstart = () => {
+      panel.on('pointstart', () => {
         // パネルを開く
         this.openPanel(panel);
         // クリア判定
         this.checkClear();
-      };
+      });
     });
     // クリア判定用
     this.oCount = 0;
@@ -62,7 +62,7 @@ phina.define('MainScene', {
   checkClear: function() {
     if (this.oCount === PANEL_NUM - BOMB_NUM) {
       // パネルを選択不可に
-      this.panelGroup.children.each((panel) => {
+      this.panelGroup.children.each(function(panel) {
         panel.setInteractive(false);
       });
     }
@@ -116,7 +116,7 @@ phina.define('MainScene', {
   getPanel: function(pos) {
     let result = null;
     
-    this.panelGroup.children.some((panel) => {
+    this.panelGroup.children.some(function(panel) {
       if (panel.indexPos.equals(pos)){
         result = panel;
         return true;
