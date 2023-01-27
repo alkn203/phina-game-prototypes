@@ -108,9 +108,11 @@ phina.define('MainScene', {
   },
   // ブロックとの当たり判定
   hitTestBlock: function() {
-    
-    if (this.ball.hitTestElement(this.paddle)) {
-      // 反射
+    //
+    this.blockGroup.children.some(function(block) {
+      if (this.ball.hitTestElement(block)) {
+      // 上から
+      if (
       this.ball.reflectY();
     }
   },
