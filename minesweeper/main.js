@@ -54,7 +54,7 @@ phina.define('MainScene', {
         // クリア判定
         this.checkClear();
       });
-    });
+    }, this);
     // クリア判定用
     this.oCount = 0;
   },
