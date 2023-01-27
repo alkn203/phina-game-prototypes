@@ -48,6 +48,7 @@ phina.define('MainScene', {
     this.controller.x = this.gridX.center();
     this.controller.y = this.gridY.span(29);
     this.controller.on('pointmove', (e) => {
+      this.ball.remove();
       const x = e.pointer.x;
       this.paddle.x = x;
     });
