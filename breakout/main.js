@@ -43,16 +43,6 @@ phina.define('MainScene', {
     this.createBlock();
     // ボール初期移動量
     this.ball.vec = Vector2(1, 2);
-    //
-    this.controller = CircleShape().addChildTo(this);
-    this.controller.x = this.gridX.center();
-    this.controller.y = this.gridY.span(29);
-    this.controller.on('pointmove', (e) => {
-      this.ball.remove();
-      const x = e.pointer.x;
-      this.paddle.x = x;
-    });
-
   },
   // ブロック配置
   createBlock: function() {
@@ -84,6 +74,12 @@ phina.define('MainScene', {
     this.hitTestWall();
     // ブロックとの当たり判定
     this.hitTestBlock();
+  },
+  // マウス移動時処理
+  onpointmove: function(e) {
+    //
+    const x = e.pointer.x;
+    this.paddle.x = x;
   },
   // パドルとの当たり判定
   hitTestPaddle: function() {
