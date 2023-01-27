@@ -10,7 +10,7 @@ const OFFSET_X = BLOCK_WIDTH / 2;  // 縦位置調整用
 const OFFSET_Y = BLOCK_HEIGHT / 2; // 横位置調整用
 const PADDLE_Y = 24;               // パドルの縦位置
 const BALL_SPEED = 10;             // ボールのスピード
-const SENSE = 10;                  // コントロール感度
+const SENSE = 5;                  // コントロール感度
 // アセット
 const ASSETS = {
   // 画像
@@ -44,12 +44,6 @@ phina.define('MainScene', {
     this.createBlock();
     // ボール初期移動量
     this.ball.vec = Vector2(1, 2);
-    //
-    const rect = RectangleShape().addChildTo(this);
-    rect.setPosition(this.gridX.center(), this.gridY.span(26));
-    rect.onpointmove = function(e) {
-      rect.x = e.pointer.x;
-    };
   },
   // ブロック配置
   createBlock: function() {
@@ -81,10 +75,12 @@ phina.define('MainScene', {
     this.hitTestWall();
     // ブロックとの当たり判定
     this.hitTestBlock();
+    // 画面下落下判定
+    this.checkOutside();
   },
-  // マウス移動時処理
+  // ハドル移動処理
   onpointmove: function(e) {
-    //
+    // 前のフレームからの移動距離
     const dx = e.pointer.dx * SENSE;
     this.paddle.x += dx;
   },
@@ -101,11 +97,6 @@ phina.define('MainScene', {
     if (this.ball.top < 0) {
       // 位置補正して反射
       this.ball.top = 0;
-      this.ball.reflectY();
-    }
-    // 下
-    if (this.ball.bottom > SCREEN_HEIGHT) {
-      this.ball.bottom = SCREEN_HEIGHT;
       this.ball.reflectY();
     }
     // 左
@@ -156,7 +147,13 @@ phina.define('MainScene', {
         }
       }
     });
-  }
+  },
+  // 画面下落下判定
+  checkOutside: function() {
+    if (this.ball.top > SCREEN_HEIGHT) {
+      //
+      this.exit();
+    }
 });
 // パドルクラス
 phina.define('Paddle', {
