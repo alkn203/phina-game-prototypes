@@ -45,8 +45,8 @@ phina.define('MainScene', {
     this.ball.vec = Vector2(1, 2);
     //
     this.controller = CircleShape().addChildTo(this);
-    this.controller.x = this.gridX(center());
-    this.controller.y = this.gridY(span(26));
+    this.controller.x = this.gridX.center();
+    this.controller.y = this.gridY.span(26);
 
   },
   // ブロック配置
