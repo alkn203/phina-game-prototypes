@@ -73,7 +73,7 @@ phina.define('MainScene', {
     // 壁との当たり判定
     this.hitTestWall();
     // ブロックとの当たり判定
-    this.hitTestBlock();
+    //this.hitTestBlock();
   },
   // パドルとの当たり判定
   hitTestPaddle: function() {
