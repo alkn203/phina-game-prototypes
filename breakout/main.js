@@ -108,13 +108,22 @@ phina.define('MainScene', {
   },
   // ブロックとの当たり判定
   hitTestBlock: function() {
+    const ball = this.ball;
     //
     this.blockGroup.children.some(function(block) {
-      if (this.ball.hitTestElement(block)) {
-      // 上から
-      if (
-      this.ball.reflectY();
-    }
+      if (ball.hitTestElement(block)) {
+        // 上から
+        if (ball.vec.y > 0 && block.top < ball.top) {
+          ball.bottom = block.top;
+          ball.reflectY();
+          return true;
+        // 下から
+        if (ball.vec.y < 0 && block.bottom < ball.bottom) {
+          ball.top = block.bottom;
+          ball.reflectY();
+          return true;
+      }
+    });
   },
 });
 // パドルクラス
