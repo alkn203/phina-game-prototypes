@@ -122,6 +122,7 @@ phina.define('MainScene', {
           ball.top = block.bottom;
           ball.reflectY();
           return true;
+        }
       }
     });
   },
