@@ -43,6 +43,11 @@ phina.define('MainScene', {
     this.createBlock();
     // ボール初期移動量
     this.ball.vec = Vector2(1, 2);
+    //
+    this.controller = CircleShape().addChildTo(this);
+    this.controller.x = this.gridX(center());
+    this.controller.y = this.gridY(span(26));
+
   },
   // ブロック配置
   createBlock: function() {
