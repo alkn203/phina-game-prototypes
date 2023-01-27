@@ -10,6 +10,7 @@ const OFFSET_X = BLOCK_WIDTH / 2;  // 縦位置調整用
 const OFFSET_Y = BLOCK_HEIGHT / 2; // 横位置調整用
 const PADDLE_Y = 24;               // パドルの縦位置
 const BALL_SPEED = 10;             // ボールのスピード
+const SENSE = 10;                  // コントロール感度
 // アセット
 const ASSETS = {
   // 画像
@@ -78,7 +79,7 @@ phina.define('MainScene', {
   // マウス移動時処理
   onpointmove: function(e) {
     //
-    const dx = e.pointer.dx * 2;
+    const dx = e.pointer.dx * SENSE;
     this.paddle.x += dx;
   },
   // パドルとの当たり判定
