@@ -117,6 +117,7 @@ phina.define('MainScene', {
           ball.bottom = block.top;
           ball.reflectY();
           return true;
+        }
         // 下から
         if (ball.vec.y < 0 && block.bottom < ball.bottom) {
           ball.top = block.bottom;
