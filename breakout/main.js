@@ -107,7 +107,7 @@ phina.define('MainScene', {
     }
   },
   // ブロックとの当たり判定
-  hitTestBlock: function() {
+/*  hitTestBlock: function() {
     const ball = this.ball;
     //
     this.blockGroup.children.some(function(block) {
@@ -126,7 +126,7 @@ phina.define('MainScene', {
         }
       }
     });
-  },
+  }*/
 });
 // パドルクラス
 phina.define('Paddle', {
