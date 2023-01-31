@@ -1,9 +1,9 @@
 // グローバルに展開
 phina.globalize();
 // 定数
-var SCREEN_WIDTH = 640;
-var SCREEN_HEIGHT = 960;
-var GRID_SIZE = 64;
+var SCREEN_WIDTH = 640;       // スクリーン幅
+var SCREEN_HEIGHT = 960;      // スクリーン高さ
+var GRID_SIZE = 64;           // グリッドサイズ
 var GRID_NUM_X = 10;
 var GRID_NUM_Y = 15;
 var PLAYER_SPEED = 5;
@@ -22,66 +22,12 @@ var UFO_INTERVAL = 8000;
 var ASSETS = {
   // 画像
   image: {
-    'player': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/player.png',
-    'shot': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/shot.png',
-    'enemy-sheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/enemy-sheet.png',
-    'explosion-sheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/explosion-sheet.png',
-    'beam': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/beam.png',
-    'ufo-sheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/invader/assets/ufo-sheet.png',
-  },
-  // スプライトシート
-  spritesheet: {
-    'enemy_ss':
-    {
-      "frame": {
-        "width": 64,
-        "height": 64,
-        "cols": 2,
-        "rows": 1,
-      },
-      // アニメーション
-      "animations" : {
-        "loop": {
-          "frames": [0,1],
-          "next": "loop",
-          "frequency": 16,
-        },
-      }
-    },
-    'ufo_ss':
-    {
-      "frame": {
-        "width": 64,
-        "height": 64,
-        "cols": 2,
-        "rows": 1,
-      },
-      // アニメーション
-      "animations" : {
-        "loop": {
-          "frames": [0,1],
-          "next": "loop",
-          "frequency": 16,
-        },
-      }
-    },
-    'explosion_ss':
-    {
-      "frame": {
-        "width": 64,
-        "height": 64,
-        "cols": 2,
-        "rows": 1,
-      },
-      // アニメーション
-      "animations" : {
-        "start": {
-          "frames": [0,1],
-          "next": "",
-          "frequency": 4,
-        },
-      }
-    },
+    'player': 'assets/player.png',
+    'shot': 'assets/shot.png',
+    'enemy-sheet': 'assets/enemy-sheet.png',
+    'explosion-sheet': 'assets/explosion-sheet.png',
+    'beam': 'assets/beam.png',
+    'ufo-sheet': 'assets/ufo-sheet.png',
   },
 };
 // タイトルシーン
@@ -359,10 +305,6 @@ phina.define('Enemy', {
   init: function() {
     // 親クラスの初期化
     this.superInit('enemy-sheet', 64, 64);
-    // SpriteSheetをスプライトにアタッチ
-    var anim = FrameAnimation('enemy_ss').attachTo(this);
-    //アニメーションを再生する
-    anim.gotoAndPlay('loop');
   },
 });
 // UFOクラス
@@ -373,10 +315,6 @@ phina.define('Ufo', {
   init: function() {
     // 親クラスの初期化
     this.superInit('ufo-sheet', 64, 64);
-    // SpriteSheetをスプライトにアタッチ
-    var anim = FrameAnimation('ufo_ss').attachTo(this);
-    //アニメーションを再生する
-    anim.gotoAndPlay('loop');
     //
     this.physical.force(-4, 0);
   },
@@ -415,20 +353,8 @@ phina.define('Explosion', {
   init: function() {
     // 親クラスの初期化
     this.superInit('explosion-sheet', 64, 64);
-    // SpriteSheetをスプライトにアタッチ
-    var anim = FrameAnimation('explosion_ss').attachTo(this);
-    //アニメーションを再生する
-    anim.gotoAndPlay('start');
-    // 参照用
-    this.anim = anim;
   },
-  // 毎フレーム処理
-  update: function() {
-    // アニメーションが終わったら自身を消去
-    if (this.anim.finished) {
-      this.remove();
-    }
-  },
+
 });
 // スコアクラス 
 phina.define('Score', {
