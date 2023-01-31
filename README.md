@@ -27,9 +27,12 @@ Game prototypes powered by phina.js
 
 ## Ivader
 
-![match3](https://alkn203.github.io/phina-game-prototypes/images/invader.png)
+![invader](https://alkn203.github.io/phina-game-prototypes/images/invader.png)
 
 [play](https://alkn203.github.io/phina-game-prototypes/invader/)
+
+←　→ Move Player
+SPACE Shot
 
 # LICENSE
 MIT
