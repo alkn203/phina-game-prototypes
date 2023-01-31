@@ -25,5 +25,11 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/match3/)
 
+## Ivader
+
+![match3](https://alkn203.github.io/phina-game-prototypes/images/invader.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/invader/)
+
 # LICENSE
 MIT
