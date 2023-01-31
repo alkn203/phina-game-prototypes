@@ -95,31 +95,28 @@ phina.define(`MainScene`, {
     // UFO出現管理用
     this.ufoTime = UFO_INTERVAL;
     //
-    this.locateEnemys();
+    this.locateEnemy();
     // 敵の横移動方向
     this.enemyDir = -1;
   },
   // 敵配置
-  locateEnemys: function() {
-    var self = this;
-    
+  locateEnemy: function() {
     ENEMY_NUM.times(function(i) {
       // グリッド配置用のインデックス値算出
       var xIndex = i % ENEMY_NUM_X;
       var yIndex = Math.floor(i / ENEMY_NUM_X);
       // 敵作成
-      var enemy = Enemy().addChildTo(self.enemyGroup);
+      var enemy = Enemy().addChildTo(this.enemyGroup);
       // Gridを利用して配置
-      enemy.x = self.gx.span(xIndex) + GRID_SIZE;
-      enemy.y = self.gy.span(yIndex) + GRID_SIZE;
+      enemy.x = this.gx.span(xIndex) + GRID_SIZE;
+      enemy.y = this.gy.span(yIndex) + GRID_SIZE;
       // コライダー設定
       enemy.collider.hide();
       
-    });
+    }, this);
   },
   // 敵移動
-  moveEnemys: function() {
-    var self = this;
+  moveEnemy: function() {
     var result = false;
     
     this.enemyGroup.children.some(function(enemy) {
@@ -139,8 +136,8 @@ phina.define(`MainScene`, {
     }
     // 移動処理
     this.enemyGroup.children.each(function(enemy) {
-      enemy.x += self.enemyDir * ENEMY_SPEED;
-    });
+      enemy.x += this.enemyDir * ENEMY_SPEED;
+    }, this);
   },
   // 敵の攻撃
   enemyAttack: function() {
@@ -241,7 +238,7 @@ phina.define(`MainScene`, {
       this.player.x += dir.x * PLAYER_SPEED;
     }
     // 敵移動
-    this.moveEnemys();
+    this.moveEnemy();
     // 敵攻撃
     this.enemyAttack();
     // スペースキーでミサイル発射
@@ -305,6 +302,13 @@ phina.define('Enemy', {
   init: function() {
     // 親クラスの初期化
     this.superInit('enemy-sheet', 64, 64);
+    // アニメーション
+    this.tweener.wait(1000)
+                .set({frameIndex: 1})
+                .wait(1000)
+                .set({frameIndex: 0})
+                .setLoop(true)
+                .play();
   },
 });
 // UFOクラス
@@ -315,11 +319,19 @@ phina.define('Ufo', {
   init: function() {
     // 親クラスの初期化
     this.superInit('ufo-sheet', 64, 64);
-    //
+    // 左方向へ移動
     this.physical.force(-4, 0);
+    // アニメーション
+    this.tweener.wait(1000)
+                .set({frameIndex: 1})
+                .wait(1000)
+                .set({frameIndex: 0})
+                .setLoop(true)
+                .play();
   },
-  //
+  // 毎フレーム処理
   update: function() {
+    // 画面外に出たら削除
     if (this.right < 0) {
       this.remove();
     }
@@ -335,11 +347,12 @@ phina.define('Beam', {
     this.superInit('beam');
     // 下方向に移動
     this.physical.force(0, BEAM_SPEED);
-    //
+    // コライダー
     this.collider.setSize(16, 64);
   },
-  //
+  // 毎フレーム処理
   update: function() {
+    // 画面外に出たら削除
     if (this.top > SCREEN_HEIGHT) {
       this.remove();
     }
@@ -352,9 +365,16 @@ phina.define('Explosion', {
   // 初期化
   init: function() {
     // 親クラスの初期化
-    this.superInit('explosion-sheet', 64, 64);
+    this.superInit('explosion-sheet', GRID_SIZE, GRID_SIZE);
+    // アニメーション後に削除
+    this.tweener.wait(100)
+                .set({frameIndex: 1})
+                .wait(100)
+                .call(function() {
+                  this.remove()
+                }, this)
+                .play();
   },
-
 });
 // スコアクラス 
 phina.define('Score', {
@@ -368,11 +388,10 @@ phina.define('Score', {
     this.text = this.score;
     //
     this.fill = 'lime';
-    //
-    var self = this;
+    // 1秒後に削除
     this.tweener.wait(1000).call(function() {
-      self.remove();
-    });
+      this.remove();
+    }, this);
    }, 
  });
 // メイン処理
