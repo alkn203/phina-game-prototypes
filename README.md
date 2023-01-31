@@ -31,8 +31,8 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/invader/)
 
-←　→ Move Player
-SPACE Shot
+* ←　→ Move Player
+* SPACE KEY Shot
 
 # LICENSE
 MIT
