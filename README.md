@@ -25,14 +25,14 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/match3/)
 
-## Ivader
+## Invader
 
 ![invader](https://alkn203.github.io/phina-game-prototypes/images/invader.png)
 
 [play](https://alkn203.github.io/phina-game-prototypes/invader/)
 
-* LEFT KEY RIGHT KEY Move Player
-* SPACE KEY Shot
+* LEFT KEY or RIGHT KEY　→ Move Player
+* SPACE KEY →　Shot
 
 # LICENSE
 MIT
