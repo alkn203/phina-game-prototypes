@@ -1,382 +1,308 @@
 phina.globalize();
-// アセット
-const ASSETS = {
-  // 画像
-  image: {
-    'gem': 'assets/gem.png',
-  },
-};
 // 定数
-const SCREEN_WIDTH = 640;
-const SCREEN_HEIGHT = 640;
-const GEM_SIZE = 80;
-const GEM_NUM_X = 8;
-const GEM_NUM_Y = GEM_NUM_X * 2;
-const GEM_NUM = GEM_NUM_X * GEM_NUM_X;
-const GEM_OFFSET = GEM_SIZE / 2;
+const BLOCK_SIZE = 40; // ブロックサイズ
+const BLOCK_COLS = 10; // ブロックの横に並ぶ数
+const BLOCK_ROWS = 20; // ブロックの縦に並ぶ数
+const BLOCK_ALL_WIDTH = BLOCK_SIZE * BLOCK_COLS; // ブロック全体の幅
+const BLOCK_ALL_HEIGHT = BLOCK_ALL_WIDTH * 2; // ブロック全体の高さ
+const INTERVAL = 20; // ブロックの移動速度調整用
+// ブロック(7種)の配置情報
+const BLOCK_LAYOUT = [
+  [Vector2(0, 0), Vector2(0, -1), Vector2(0, -2), Vector2(0, 1)],
+  [Vector2(0, 0), Vector2(0, -1), Vector2(0, 1), Vector2(1, 1)],
+  [Vector2(0, 0), Vector2(0, -1), Vector2(0, 1), Vector2(-1, 1)],
+  [Vector2(0, 0), Vector2(0, -1), Vector2(-1, -1), Vector2(1, 0)],
+  [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(-1, 0)],
+  [Vector2(0, 0), Vector2(1, 0), Vector2(-1, 0), Vector2(0, -1)],
+  [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(1, 0)]];
 // メインシーン
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
-  init: function(param) {
+  init: function() {
     // 親クラス初期化
-    this.superInit({
-      width: SCREEN_WIDTH,
-      height: SCREEN_HEIGHT,
+    this.superInit();
+    const self = this;
+
+    this.fromJSON({
+      children: {
+        // ブロック移動エリア
+        'blockArea': {
+          className: 'RectangleShape',
+          width: BLOCK_ALL_WIDTH, height: BLOCK_ALL_HEIGHT,
+          fill: 'gray',
+          x: this.gridX.center(), top: 0, 
+        },
+        // 左ボタン
+        'leftButton': {
+          className: 'Button',
+          text: "←",
+          width: this.gridX.span(4),
+          x: this.gridX.center(-4), y: this.gridY.span(14.6),
+          onpointstart: function() {
+            self.prevFrame = self.frame;
+            self.moveBlockX(-1);
+          },
+          onpointstay: function() {
+            if (self.frame - self.prevFrame > INTERVAL) self.moveBlockX(-1);
+          },
+        },
+        // 右ボタン
+        'rightButton': {
+          className: 'Button',
+          text: "→",
+          width: this.gridX.span(4),
+          x: this.gridX.center(4), y: this.gridY.span(14.6),
+          onpointstart: function() {
+            self.prevFrame = self.frame;
+            self.moveBlockX(1);
+          },
+          onpointstay: function() {
+            if (self.frame - self.prevFrame > INTERVAL) self.moveBlockX(1);
+          },
+        },
+        // 回転ボタン
+        'rotateButton': {
+          className: 'Button',
+          text: "↑",
+          width: this.gridX.span(3.5), height: this.gridY.span(1),
+          x: this.gridX.center(), y: this.gridY.span(14),
+          onpush: function() { self.rotateBlock(); },
+        },
+        // 落下ボタン
+        'downButton': {
+          className: 'Button',
+          text: "↓",
+          width: this.gridX.span(3.5), height: this.gridY.span(1),
+          x: this.gridX.center(), y: this.gridY.span(15.2),
+          onpointstay: function() { self.interval = INTERVAL / 10 },
+          onpointend: function() { self.interval = INTERVAL; },
+        },
+      }
     });
-    // 背景色
-    this.backgroundColor = 'black'; 
-    // グリッド
-    var grid = Grid(SCREEN_WIDTH, GEM_NUM_X);
-    // グループ
-    var gemGroup = DisplayElement().addChildTo(this);
-    this.dummyGroup = DisplayElement().addChildTo(this);
-    this.cursorGroup = DisplayElement().addChildTo(this);
-    // ペア
-    this.pair = [];
-    // ジェム配置
-    GEM_NUM.times((i) => {
-      var sx = i % GEM_NUM_X;
-      var sy = Math.floor(i / GEM_NUM_X);
-      
-      var gem = Gem().addChildTo(gemGroup);
-      gem.x = grid.span(sx) + GEM_OFFSET;
-      gem.y = grid.span(sy) + GEM_OFFSET;
-      gem.dropCnt = 0;
-    });
-    // 参照用
-    this.gemGroup = gemGroup;
-    this.grid = grid;
-    //ジェム初期化
-    this.initGem();
-    // 画面外ジェム作成
-    this.initHiddenGem();
+    // 移動ブロックグループ
+    this.dynamicBlocks = DisplayElement().addChildTo(this);
+    // 固定ブロックグループ
+    this.staticBlocks = DisplayElement().addChildTo(this);
+    // ダミーブロックグループ
+    this.dummyBlocks = DisplayElement().addChildTo(this);
+
+    this.interval = INTERVAL; 
+    // ブロック作成
+    this.createBlock();
   },
-  // ジェム初期化
-  initGem: function() {
-    // 3つ並び以上があれば仕切り直し
-    if (this.existMatch3()) {
-      this.gemGroup.children.each((gem) => {
-        // ランダムな色
-        gem.setRandomColor();
+  // 落下ブロック作成
+  createBlock: function() {
+    // 種類をランダムに決める
+    const type = Random.randint(0, 6);
+    // 落下ブロック作成
+    (4).times(function(i) {
+      const block = Block().addChildTo(this.dynamicBlocks);
+      block.type = type;
+      // ライン消しの時に落下させる回数
+      block.dropCount = 0;
+    }, this);
+    // 基準ブロック
+    const org = this.dynamicBlocks.children.first;
+    org.setPosition(this.gridX.center() + BLOCK_SIZE / 2, this.gridY.span(1));
+    // 配置情報をもとにブロックを組み立てる
+    this.dynamicBlocks.children.each(function(block, i) {
+      block.position = Vector2.add(org.position, BLOCK_LAYOUT[type][i].mul(BLOCK_SIZE));
+    });
+  },
+  // ブロック落下処理
+  moveBlockY: function() {
+    const blocks = this.dynamicBlocks.children;
+    // １ブロック下へ移動
+    blocks.each(function(block) {
+      block.y += BLOCK_SIZE;
+    });
+
+    let hit = false;
+    // 当たり判定
+    blocks.each(function(block) {
+      // 地面
+      if (block.top === this.blockArea.bottom) {
+        hit = true;
+      }
+      // 固定ブロック
+      this.staticBlocks.children.each(function(target) {
+        if (block.hitTestElement(target)) {
+          hit = true;
+        }
       });
-      // 再度呼び出し
-      this.initGem();
+    }, this);
+    // ヒットの場合
+    if (hit) {
+      // １ブロック分戻す
+      blocks.each(function(block) {
+        block.y -= BLOCK_SIZE; });
+      // 固定ブロックへ
+      this.dynamicToStatic();
     }
   },
-  // 画面外のジェム配置
-  initHiddenGem: function() {
-    // 一旦消す
-    this.gemGroup.children.eraseIfAll((gem) => {
-      if (gem.y < 0) {
-        return true;
-      }
+  // 落下ブロック横移動
+  moveBlockX: function(dir) {
+    const blocks = this.dynamicBlocks.children;
+    // １ブロック移動
+    blocks.each(function(block) { block.x += dir * BLOCK_SIZE; });
+        
+    const hit = false;
+    const self = this;
+    const area = this.blockArea;
+    
+    blocks.each(function(block) {
+      // 画面両端との当たり判定
+      if (block.right === area.left || block.left === area.right) hit = true;
+      // 固定ブロックとの当たり判定
+      self.staticBlocks.children.each(function(target) {
+        if (block.hitTestElement(target)) hit = true;
+      });
     });
+    // ヒットしていたら１ブロック戻す
+    if (hit) blocks.each(function(block) { block.x += -dir * BLOCK_SIZE; });
+  },
+  // 落下ブロック回転
+  rotateBlock: function() {
+    const blocks = this.dynamicBlocks.children;
+    const area = this.blockArea;
+    const org = blocks.first;
+    // 四角ブロックの場合は何もしない
+    if (org.type === 6) return;
     
-    GEM_NUM.times((i) => {
-      var sx = i % GEM_NUM_X;
-      var sy = Math.floor(i / GEM_NUM_X);
-    
-      var gem = Gem().addChildTo(this.gemGroup);
-      gem.x = this.grid.span(sx) + GEM_OFFSET;
-      // 一画面文分上にずらす
-      gem.y = this.grid.span(sy) + GEM_OFFSET - SCREEN_HEIGHT;
-      gem.setRandomColor();
-      gem.dropCnt = 0;
+    const hit = false;
+    const self = this;
+    // 回転後の位置を事前に計算して、当たり判定を行う
+    blocks.each(function(block) {
+      const pos = Vector2((block.y - org.y) + org.x, -(block.x - org.x) + org.y);
+      // 両端、地面
+      if (pos.x < area.left || pos.x > area.right || pos.y > area.bottom) {
+        hit = true;
+      }
+      // 固定ブロック
+      self.staticBlocks.children.each(function(target) {
+        if (pos.x === target.x && pos.y === target.y) hit = true;
+      });
+    });
+    // 回転不能
+    if (hit) return;
+    // 回転可能
+    blocks.each(function(block) {
+      block.setPosition((block.y - org.y) + org.x, -(block.x - org.x) + org.y);
     });
   },
-  // ペアの選択処理
-  selectPair:function(gem) {
-    // 一つ目
-    if (this.pair.length === 0) {
-      // カーソル表示
-      var c1 = Cursor().addChildTo(this.cursorGroup);
-      c1.setPosition(gem.x, gem.y);
-      this.pair.push(gem);
-      // 隣り合わせ以外を選択不可にする
-      this.selectableNext();
-      return;
-    }
-    // 二つ目
-    if (this.pair.length === 1) {
-      var c2 = Cursor().addChildTo(this.cursorGroup);
-      c2.setPosition(gem.x, gem.y);
-      this.pair.push(gem);
-      // 入れ替え処理
-      this.swapGem(false);
-    }
+  // 落下ブロックから固定ブロックの変更処理
+  DynamicToStatic: function() {
+    const blocks = this.dynamicBlocks.children;
+    // 落下グループから固定グループへ
+    (blocks.length).times(function() {
+      blocks.pop().addChildTo(this.staticBlocks);
+    }, this);
+    // 画面上部に達したらゲームオーバー
+    this.staticBlocks.children.each(function(block) {
+      if (block.top < 0) {
+        this.nextLabel = 'title';
+        this.exit();  
+      }  
+    }, this);
+    // ブロック削除処理
+    this.removeBlock();
   },
-  // 隣り合わせ以外を選択不可にする
-  selectableNext: function() {
-    var gem = this.pair[0];
-    // 一旦全てを選択不可に
-    this.gemGroup.children.each((gem) => {
-      gem.setInteractive(false);
-    });
-    
-    this.gemGroup.children.each((target) => {
-      var dx = Math.abs(gem.x - target.x);
-      var dy = Math.abs(gem.y - target.y);
-      // 上下左右隣り合わせだけを選択可に
-      if (gem.x === target.x && dy === GEM_SIZE) {
-        target.setInteractive(true);
-      }
-      if (gem.y === target.y && dx === GEM_SIZE) {
-        target.setInteractive(true);
-      }
-    });
-  },
-  // ジェム入れ替え処理
-  swapGem: function(second) {
-    var g1 = this.pair[0];
-    var g2 = this.pair[1];
-    var self = this;
-    // 1回目
-    if (!second) {
-      this.setGemSelectable(false);
-      this.cursorGroup.children.clear();
-    }
-    // flowで非同期処理
-    var flows = [];
-    
-    var flow1 = Flow((resolve) => {
-      // 入れ替えアニメーション
-      g1.tweener.updateType = 'normal';
-      g1.tweener.to({x: g2.x, y: g2.y}, 200)
-        .call(() => {
-          resolve();
-        }).play();
-    });
-    var flow2 = Flow((resolve) => {
-      g2.tweener.updateType = 'normal';
-      g2.tweener.to({x: g1.x, y: g1.y}, 200)
-        .call(() => {
-          resolve();
-        }).play();
-    });
-    
-    flows.push(flow1);
-    flows.push(flow2);
-    // 入れ替え後処理
-    Flow.all(flows).then((message) => {
-      if (second) {
-        this.pair.clear();
-        this.setGemSelectable(true);
-      }
-      else {
-        //  3つ並びがあれば削除処理へ
-        if (this.existMatch3()) {
-          this.pair.clear();
-          this.removeGem();
+  // ブロック消去処理
+  removeBlock: function() {
+    const blocks = this.staticBlocks.children;
+    const self = this;
+    const removeY = [];
+    // 上から走査
+    BLOCK_ROWS.times(function(i) {
+      let count = 0;
+      const currentY = i * BLOCK_SIZE;
+      // 固定ブロックに対して
+      blocks.each(function(block) {
+        // 対象ラインと同じ並びかどうか
+        if (currentY === block.top) {
+          count++;
+          // 10個並んでいたら消去対象ラインとして登録
+          if (count === BLOCK_COLS) removeY.push(currentY);
         }
-        else {
-          // 戻りの入れ替え
-          this.swapGem(true);
-        }
-      }
+      });
     });
-  },
-  // 3つ並び以上存在チェック
-  existMatch3: function() {
-    this.gemGroup.children.each((gem) => {
-      // 画面に見えているジェムのみ
-      if (gem.y > 0) {
-        // 横方向
-        this.checkHorizontal(gem);
-        this.setMark();
-        // 縦方向
-        this.checkVertical(gem);
-        this.setMark();
-      }
-    });
-    
-    var result = false;
-    
-    this.gemGroup.children.some((gem) => {
-      // 削除対象があれば
-      if (gem.mark === "rmv") {
-        result = true;
-        return true;
-      }
-    });
-    
-    return result;
-  },
-  // 横方向の3つ並び以上チェック
-  checkHorizontal: function(current) {
-    if (current.mark !== "rmv") {
-      current.mark = "tmp";
-    }
-
-    this.cnt++;
-    var next = this.getGem(Vector2(current.x + GEM_SIZE, current.y));
-    if (next && current.num === next.num) {
-      this.checkHorizontal(next);
-    }
-  },
-  // 縦方向の3つ並び以上チェック
-  checkVertical: function(current) {
-    if (current.mark !== "rmv") {
-      current.mark = "tmp";
-    }
-
-    this.cnt++;
-    var next = this.getGem(Vector2(current.x, current.y + GEM_SIZE));
-    if (next && current.num === next.num) {
-      this.checkVertical(next);
-    }
-  },
-  // マークセット
-  setMark: function() {
-    this.gemGroup.children.each((gem) => {
-      if (gem.mark === "tmp") {
-        // 3つ並び以上なら削除マーク
-        if (this.cnt > 2) {
-          gem.mark = "rmv";
-        } else {
-          gem.mark = "normal";
-        }
-      }
-    });
-    
-    this.cnt = 0;
-  },
-  // ジェムの削除処理
-  removeGem: function() {
-    this.gemGroup.children.each((gem) => {
-      if (gem.mark === "rmv") {
-        // 削除対象ジェムより上にあるジェムに落下回数をセット
-        this.gemGroup.children.each((target) => {
-          if (target.y < gem.y && target.x === gem.x) {
-            target.dropCnt++;
+    // 消去対象ラインがあれば
+    if (removeY.length > 0) {
+      removeY.each(function(y) {
+        blocks.each(function(block) {
+          // 消去マーキング
+          if (block.top === y) {
+            block.mark = "remove";
+            // 消去アニメーション用ダミー作成
+            const dummy = Block().addChildTo(self.dummyBlocks);
+            dummy.setPosition(block.x, block.y);
           }
+          // 削除ラインより上のブロックに落下カウントアップ
+          if (block.top < y) block.dropCount++;
         });
-        // 消去アニメーション用ダミー作成
-        var dummy = Gem().addChildTo(this.dummyGroup);
-        dummy.setPosition(gem.x, gem.y);
-        dummy.fill = gem.fill;
-      }
-    });
-    // ジェム削除
-    this.gemGroup.children.eraseIfAll((gem) => {
-      if (gem.mark === "rmv") {
-        return true;
-      }
-    });
-    var flows = [];
-    // flowで非同期処理
-    this.dummyGroup.children.each((dummy) => {
-      var flow = Flow((resolve) => {
-        dummy.tweener
-             .to({scaleX: 0.2, scaleY: 0.2, ahpha: 0.2}, 200)
-             .call(() => {
-               dummy.remove();
-               resolve('removed');
-             }).play();
       });
-      flows.push(flow);
-    });
-    
-    Flow.all(flows).then((message) => {
-      this.dropGems();
-    });
-  },
-  // ジェムの落下処理
-  dropGems: function() {
-    var flows = [];
-    
-    this.gemGroup.children.each((gem) => {
-      // 落下フラグがあるジェムを落下させる
-      if (gem.dropCnt > 0) {
-        // 落下アニメーション
-        var flow = Flow((resolve) => {
-          gem.tweener.updateType = 'normal';
-          gem.tweener.by({y: gem.dropCnt * GEM_SIZE}, gem.dropCnt * 200, 'easeInCubic')
-                     .call(() => {
-                        gem.dropCnt = 0;
-                        resolve('dropped');
-                     }).play();
-          
-        });
-        flows.push(flow);
-      }
-    });
+      // ブロック消去
+      blocks.eraseIfAll(function(block) { return block.mark === "remove"; });
+      // ダミーに消去アニメーション
+      const flow = Flow(function(resolve) {
+        const dummys = self.dummyBlocks.children;
 
-    Flow.all(flows).then((message) => {
-      // 画面外のジェムを作り直す
-      this.initHiddenGem();
-      // 3並び再チェック
-      if (this.existMatch3()) {
-        this.removeGem();
-      }
-      else {
-        this.setGemSelectable(true);
-      }
-    });
+        dummys.each(function(dummy) {
+          dummy.tweener.clear().to({scaleY: 0}, 300)
+                       .call(function() {
+                         dummy.remove();
+                         // ダミーを全て消去したら
+                         if (dummys.length === 0) resolve('remove done');
+                       });
+        });
+      });
+      // 消去アニメーション後、固定ブロック落下処理
+      flow.then(function(message) { self.dropBlock(); });      
+    }
+    else this.createBlock();
   },
-  // 指定された位置のジェムを返す
-  getGem: function(pos) {
-    var result = null;
-    // 該当するジェムがあったらループを抜ける
-    this.gemGroup.children.some((gem) => {
-      if (gem.position.equals(pos)) {
-        result = gem;
-        return true;
+  // 固定ブロック落下処理
+  dropBlock: function() {
+    this.staticBlocks.children.each(function(block) {
+      if (block.dropCount > 0) {
+        block.y += block.dropCount * BLOCK_SIZE;
+        block.dropCount = 0;
       }
     });
-    return result;
+    
+    this.createBlock();
   },
-  // ジェムを選択可能にする
-  setGemSelectable: function(b) {
-    this.gemGroup.children.each((gem) => {
-      gem.setInteractive(b);
-    });
+  // 毎フレーム更新
+  update: function(app) {
+    // フレーム数を代入しておく
+    this.frame = app.frame;
+    // 一定フレーム毎にブロック移動
+    if (this.dynamicBlocks.children.length > 0 && app.frame % this.interval === 0) {
+          this.moveBlockY();
+    }
   },
 });
-// ジェムクラス
-phina.define('Gem', {
-  // Spriteを継承
-  superClass: 'Sprite',
-    // コンストラクタ
-    init: function() {
-      // 親クラス初期化
-      this.superInit('gem', GEM_SIZE, GEM_SIZE);
-      this.setInteractive(true);
-    },
-    // タッチされた時
-    onpointend: function() {
-      this.parent.parent.selectPair(this);
-    },
-    // ランダムな色セット
-    setRandomColor: function() {
-      this.num = Random.randint(0, 6);
-      this.frameIndex = this.num;
-      this.mark = 'normal'
-    },
-});
-// カーソルクラス
-phina.define('Cursor', {
+// ブロッククラス
+phina.define('Block', {
   // RectangleShapeを継承
   superClass: 'RectangleShape',
     // コンストラクタ
     init: function() {
       // 親クラス初期化
       this.superInit({
-        width: GEM_SIZE,
-        height: GEM_SIZE,
-        fill: null,
-        stroke: 'red',
+        width: BLOCK_SIZE,
+        height: BLOCK_SIZE,
+        cornerRadius: 5,
+        fill: 'silver',
+        stroke: 'white',
       });
     },
 });
 // メイン
 phina.main(function() {
-  var app = GameApp({
-    startLabel: 'main',
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    assets: ASSETS,
-    fps: 60,
+  const app = GameApp({
+    title: 'Blocks',
   });
   app.run();
 });
