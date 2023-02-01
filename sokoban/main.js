@@ -59,6 +59,12 @@ var STAGE_DATA = [
     playerPos: Vector2(4, 8),
   },
 ];
+// キー方向配列
+var KEY_DIR_ARRAY = [
+  ['left', Vector2.LEFT],
+  ['right', Vector2.RIGHT],
+  ['up', Vector2.UP],
+  ['down', Vector2.DOWN]];
 /*
  * メインシーン
  */
@@ -90,13 +96,11 @@ phina.define("MainScene", {
   },
   // 荷物配置
   locateBaggage: function(location) {
-    var self = this;
-    
     location.each(function(pos) {
       // 荷物作成
-      var baggage = Baggage().addChildTo(self.baggageGroup);
-      self.locateObject(baggage, pos);
-    });
+      var baggage = Baggage().addChildTo(this.baggageGroup);
+      this.locateObject(baggage, pos);
+    }, this);
   },
   // オブジェクト配置用メソッド
   locateObject: function(obj, pos) {
