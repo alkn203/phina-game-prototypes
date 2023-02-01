@@ -34,5 +34,11 @@ Game prototypes powered by phina.js
 * LEFT KEY or RIGHT KEY　→ Move Player
 * SPACE KEY →　Shot
 
+## Pyramid
+
+![pyramid](https://alkn203.github.io/phina-game-prototypes/images/pyramid.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/pyramid/)
+
 # LICENSE
 MIT
