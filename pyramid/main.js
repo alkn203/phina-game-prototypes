@@ -6,7 +6,7 @@ phina.globalize();
 var ASSETS = {
   // 画像
   image: {
-    'card-sheet': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/pyramid/assets/card-sheet.png',
+    'card-sheet': 'assets/card-sheet.png',
   },
 };
 /*
