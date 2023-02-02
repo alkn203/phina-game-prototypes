@@ -10,6 +10,7 @@ var ASSETS = {
 };
 // 定数
 var TILE_SIZE = 64;
+var TILE_OFFSET = TILE_SIZE / 2;
 var TILE_BAGGAGE = 4;
 var TILE_BAGGAGE_ON = 5;
 var TILE_SPOT = 2;
@@ -105,8 +106,7 @@ phina.define("MainScene", {
   // オブジェクト配置用メソッド
   locateObject: function(obj, pos) {
     obj.tilePos = pos;
-    obj.x = pos.x * TILE_SIZE + TILE_SIZE / 2;
-    obj.y = pos.y * TILE_SIZE + TILE_SIZE / 2;
+    obj.position = pos.mul(TILE_SIZE).add(Vector2(TILE_OFFSET, TILE_OFFSET));
   },
   // 毎フレーム処理  
   update: function(app) {
