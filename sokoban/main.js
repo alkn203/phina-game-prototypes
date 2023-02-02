@@ -4,8 +4,8 @@ phina.globalize();
 const ASSETS = {
   // 画像
   image: {
-    'tile': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@master/sokoban/assets/sokoban.png',
-    'tomapiko': 'https://cdn.jsdelivr.net/gh/phinajs/phina.js@develop/assets/images/tomapiko_ss.png',
+    'tile': 'assets/sokoban.png',
+    'tomapiko': 'assets/tomapiko_ss.png',
   },
 };
 // 定数

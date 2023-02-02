@@ -40,5 +40,11 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/pyramid/)
 
+## Sokoban Like
+
+![pyramid](https://alkn203.github.io/phina-game-prototypes/images/sokoban.png)
+
+[play](https://alkn203.github.io/phina-game-prototypes/sokoban/)
+
 # LICENSE
 MIT
