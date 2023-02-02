@@ -46,5 +46,7 @@ Game prototypes powered by phina.js
 
 [play](https://alkn203.github.io/phina-game-prototypes/sokoban/)
 
+* ARROW KEY　→ Move Player
+
 # LICENSE
 MIT
