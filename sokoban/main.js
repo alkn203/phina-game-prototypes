@@ -172,19 +172,17 @@ phina.define("MainScene", {
   },
   // 全てのスポットに荷物があるかチェック
   checkOnSpot: function() {
-    var map = this.map;
     var result = true;
     
     this.baggageGroup.children.each(function(baggage) {
-      var pos = baggage.tilePos;
       // 荷物がスポット上にあれば画像変更
-      if (map.checkTileByIndex(pos.x, pos.y) === TILE_SPOT) {
+      if (this.map.checkTileByVec(baggage.tilePos) === TILE_SPOT) {
         baggage.setFrameIndex(TILE_BAGGAGE_ON);
       }
       else {
         baggage.setFrameIndex(TILE_BAGGAGE);
       }
-    });
+    }, this);
     
     this.baggageGroup.children.some(function(baggage) {
       // 色が変わっていない荷物があればNG
@@ -219,7 +217,7 @@ phina.define("Player", {
     // 親クラス初期化
     this.superInit('tomapiko', TILE_SIZE, TILE_SIZE);
     // マップ上のインデックスポジション
-    this.tilePos = Vector2(0, 0);
+    this.tilePos = Vector2.ZERO;
   },
   //
 });
@@ -235,7 +233,7 @@ phina.define("Baggage", {
     this.superInit('tile', TILE_SIZE, TILE_SIZE);
     // フレームインデックス指定
     this.frameIndex = TILE_BAGGAGE;
-    this.tilePos = Vector2(0, 0);
+    this.tilePos = Vector2.ZERO;
   },
 });
 /*
@@ -243,7 +241,7 @@ phina.define("Baggage", {
  */
 phina.main(function() {
   // アプリケーションを生成
-  var app = GameApp({
+  const app = GameApp({
     // MainScene から開始
     //startLabel: 'main',
     // アセット読み込み
