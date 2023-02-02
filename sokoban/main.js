@@ -1,7 +1,7 @@
 // グローバルに展開
 phina.globalize();
 // アセット
-var ASSETS = {
+const ASSETS = {
   // 画像
   image: {
     'tile': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@master/sokoban/assets/sokoban.png',
@@ -9,13 +9,14 @@ var ASSETS = {
   },
 };
 // 定数
-var TILE_SIZE = 64;
-var TILE_OFFSET = TILE_SIZE / 2;
-var TILE_BAGGAGE = 4;
-var TILE_BAGGAGE_ON = 5;
-var TILE_SPOT = 2;
+const TILE_SIZE = 64;
+const TILE_OFFSET = TILE_SIZE / 2;
+const TILE_WALL = 3;
+const TILE_BAGGAGE = 4;
+const TILE_BAGGAGE_ON = 5;
+const TILE_SPOT = 2;
 // ステージデータ
-var STAGE_DATA = [
+const STAGE_DATA = [
   {
     // ステージ1
     // マップデータ
@@ -30,23 +31,6 @@ var STAGE_DATA = [
       [0,3,1,3,1,3,1,3,3,0],
       [0,3,1,1,1,1,1,3,0,0],
       [0,3,3,3,3,3,3,3,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0]],
-    // マップ当たり判定データ
-    collision: [
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,1,1,1,1,1,0],
-      [0,1,1,1,1,0,0,0,1,0],
-      [0,1,0,0,0,0,0,0,1,0],
-      [0,1,0,1,0,1,0,1,1,0],
-      [0,1,0,0,0,0,0,1,0,0],
-      [0,1,1,1,1,1,1,1,0,0],
       [0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0],
@@ -82,10 +66,9 @@ phina.define("MainScene", {
       tileHeight: TILE_SIZE,
       imageName: 'tile',
       mapData: STAGE_DATA[0].map,
-      collisionData: STAGE_DATA[0].collision,
     }).addChildTo(this);
     // プレイヤー作成・配置
-    var player = Player().addChildTo(this);
+    const player = Player().addChildTo(this);
     player.tilePos = STAGE_DATA[0].playerPos;
     this.locateObject(player, player.tilePos);
     // 荷物グループ
@@ -99,14 +82,14 @@ phina.define("MainScene", {
   locateBaggage: function(location) {
     location.each(function(pos) {
       // 荷物作成
-      var baggage = Baggage().addChildTo(this.baggageGroup);
+      const baggage = Baggage().addChildTo(this.baggageGroup);
       this.locateObject(baggage, pos);
     }, this);
   },
   // オブジェクト配置用メソッド
   locateObject: function(obj, pos) {
     obj.tilePos = pos;
-    obj.position = pos.mul(TILE_SIZE).add(Vector2(TILE_OFFSET, TILE_OFFSET));
+    obj.position = Vector2.mul(pos, TILE_SIZE).add(Vector2(TILE_OFFSET, TILE_OFFSET));
   },
   // 毎フレーム処理  
   update: function(app) {
@@ -114,32 +97,27 @@ phina.define("MainScene", {
   },
   // 移動チェック
   checkCanMove: function(app) {
-    var player = this.player;
-    var map = this.map;
-    var vec = Vector2(0, 0);
+    const player = this.player;
+    const map = this.map;
+    let vec = Vector2.ZERO;
     
-    var key = app.keyboard;
+    const key = app.keyboard;
     // 上下左右移動判定
-    if (key.getKeyUp('left')) {
-      vec.x = -1;
-    }
-    if (key.getKeyUp('right')) {
-      vec.x = 1;
-    }
-    if (key.getKeyUp('up')) {
-      vec.y = -1;
-    }
-    if (key.getKeyUp('down')) {
-      vec.y = 1;
-    }
+    KEY_DIR_ARRAY.each(function(elem) {
+      if (key.getKeyUp(elem[0])) {
+        vec = elem[1];
+      }
+    }, this)
+
     // 移動がなければ
     if (vec.length() === 0) {
       return;
     }
     // 移動先の位置
-    var pos = Vector2.add(player.tilePos, vec);
+    const pos = Vector2.add(player.tilePos, vec);
+    
     // 壁の場合
-    if (map.hitTestByIndex(pos.x, pos.y)) {
+    if (map.checkTileByVec(pos) === TILE_WALL) {
       return;
     }
     // 隣に荷物があるかチェック
@@ -147,9 +125,9 @@ phina.define("MainScene", {
     // 荷物がある場合
     if (baggage) {
       // さらに１つ先をチェック
-      var bpos = Vector2.add(baggage.tilePos, vec);
+      const bpos = Vector2.add(baggage.tilePos, vec);
       // 壁なら移動不可
-      if (map.hitTestByIndex(bpos.x, bpos.y)) {
+      if (map.checkTileByVec(bpos) === TILE_WALL) {
         return;
       }
       // 荷物なら移動不可
@@ -172,7 +150,7 @@ phina.define("MainScene", {
   },
   // 全てのスポットに荷物があるかチェック
   checkOnSpot: function() {
-    var result = true;
+    let result = true;
     
     this.baggageGroup.children.each(function(baggage) {
       // 荷物がスポット上にあれば画像変更
@@ -195,7 +173,7 @@ phina.define("MainScene", {
   },
   // 指定位置に荷物があれば返す
   getBaggage: function(pos) {
-    var result = null;
+    let result = null;
     
     this.baggageGroup.children.some(function(baggage) {
       if (baggage.tilePos.equals(pos)){
@@ -243,7 +221,7 @@ phina.main(function() {
   // アプリケーションを生成
   const app = GameApp({
     // MainScene から開始
-    //startLabel: 'main',
+    startLabel: 'main',
     // アセット読み込み
     assets: ASSETS,
   });
