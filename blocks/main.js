@@ -6,6 +6,13 @@ const BLOCK_ROWS = 20; // ブロックの縦に並ぶ数
 const BLOCK_ALL_WIDTH = BLOCK_SIZE * BLOCK_COLS; // ブロック全体の幅
 const BLOCK_ALL_HEIGHT = BLOCK_ALL_WIDTH * 2; // ブロック全体の高さ
 const INTERVAL = 20; // ブロックの移動速度調整用
+// アセット
+const ASSETS = {
+  // 画像
+  image: {
+    'block': 'assets/block.png',
+  },
+};
 // ブロック(7種)の配置情報
 const BLOCK_LAYOUT = [
   [Vector2(0, 0), Vector2(0, -1), Vector2(0, -2), Vector2(0, 1)],
