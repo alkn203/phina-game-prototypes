@@ -57,6 +57,7 @@ phina.define('MainScene', {
     (4).times(function(i) {
       const block = Block().addChildTo(this.dynamicBlocks);
       block.type = type;
+      block.frameIndex = type;
       // ライン消しの時に落下させる回数
       block.dropCount = 0;
     }, this);
@@ -243,8 +244,8 @@ phina.define('MainScene', {
 });
 // ブロッククラス
 phina.define('Block', {
-  // RectangleShapeを継承
-  superClass: 'RectangleShape',
+  // Spriteを継承
+  superClass: 'Sprite',
     // コンストラクタ
     init: function() {
       // 親クラス初期化
