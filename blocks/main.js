@@ -3,8 +3,9 @@ phina.globalize();
 const BLOCK_SIZE = 40; // ブロックサイズ
 const BLOCK_COLS = 10; // ブロックの横に並ぶ数
 const BLOCK_ROWS = 20; // ブロックの縦に並ぶ数
-const BLOCK_ALL_WIDTH = BLOCK_SIZE * BLOCK_COLS; // ブロック全体の幅
-const BLOCK_ALL_HEIGHT = BLOCK_ALL_WIDTH * 2; // ブロック全体の高さ
+const BOTTOM_Y = 20; // 底の位置
+const EDGE_LEFT = 2; // 移動可能な左端 
+const EDGE_RIGHT = 13; // 移動可能な右端
 const INTERVAL = 20; // ブロックの移動速度調整用
 // アセット
 const ASSETS = {
@@ -22,6 +23,10 @@ const BLOCK_LAYOUT = [
   [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(-1, 0)],
   [Vector2(0, 0), Vector2(1, 0), Vector2(-1, 0), Vector2(0, -1)],
   [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(1, 0)]];
+// キー用配列
+const KEY_ARRAY = [
+["ui_left", Vector2.LEFT],
+["ui_right", Vector2.RIGHT]];
 // メインシーン
 phina.define('MainScene', {
   superClass: 'DisplayScene',
@@ -29,72 +34,18 @@ phina.define('MainScene', {
   init: function() {
     // 親クラス初期化
     this.superInit();
-    const self = this;
-
-    this.fromJSON({
-      children: {
-        // ブロック移動エリア
-        'blockArea': {
-          className: 'RectangleShape',
-          width: BLOCK_ALL_WIDTH, height: BLOCK_ALL_HEIGHT,
-          fill: 'gray',
-          x: this.gridX.center(), top: 0, 
-        },
-        // 左ボタン
-        'leftButton': {
-          className: 'Button',
-          text: "←",
-          width: this.gridX.span(4),
-          x: this.gridX.center(-4), y: this.gridY.span(14.6),
-          onpointstart: function() {
-            self.prevFrame = self.frame;
-            self.moveBlockX(-1);
-          },
-          onpointstay: function() {
-            if (self.frame - self.prevFrame > INTERVAL) self.moveBlockX(-1);
-          },
-        },
-        // 右ボタン
-        'rightButton': {
-          className: 'Button',
-          text: "→",
-          width: this.gridX.span(4),
-          x: this.gridX.center(4), y: this.gridY.span(14.6),
-          onpointstart: function() {
-            self.prevFrame = self.frame;
-            self.moveBlockX(1);
-          },
-          onpointstay: function() {
-            if (self.frame - self.prevFrame > INTERVAL) self.moveBlockX(1);
-          },
-        },
-        // 回転ボタン
-        'rotateButton': {
-          className: 'Button',
-          text: "↑",
-          width: this.gridX.span(3.5), height: this.gridY.span(1),
-          x: this.gridX.center(), y: this.gridY.span(14),
-          onpush: function() { self.rotateBlock(); },
-        },
-        // 落下ボタン
-        'downButton': {
-          className: 'Button',
-          text: "↓",
-          width: this.gridX.span(3.5), height: this.gridY.span(1),
-          x: this.gridX.center(), y: this.gridY.span(15.2),
-          onpointstay: function() { self.interval = INTERVAL / 10 },
-          onpointend: function() { self.interval = INTERVAL; },
-        },
-      }
-    });
     // 移動ブロックグループ
-    this.dynamicBlocks = DisplayElement().addChildTo(this);
+    this.dynamicGroup = DisplayElement().addChildTo(this);
     // 固定ブロックグループ
-    this.staticBlocks = DisplayElement().addChildTo(this);
+    this.staticGroup = DisplayElement().addChildTo(this);
     // ダミーブロックグループ
-    this.dummyBlocks = DisplayElement().addChildTo(this);
-
-    this.interval = INTERVAL; 
+    this.dummyGroup = DisplayElement().addChildTo(this);
+    // 落下ブロック時間管理用
+    this.prevTime = 0;
+    this.curTime = 0;
+    this.interval = INTERVAL;
+    // 削除対象ライン
+    this.removeLine = [];
     // ブロック作成
     this.createBlock();
   },
