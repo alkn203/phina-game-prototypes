@@ -1,6 +1,7 @@
 phina.globalize();
 // 定数
 const BLOCK_SIZE = 40
+const BLOCK_OFFSET = BLOCK_SIZE / 2;
 const BLOCK_COLS = 10
 const BLOCK_ROWS = 20
 const BLOCK_NUM = 4
@@ -39,6 +40,14 @@ phina.define('MainScene', {
     this.superInit();
     // 背景色
     this.backgroundColor = 'gray';
+    // ブロック移動領域
+    var blockArea = RectangleShape({
+      width: BLOCK_SIZE * BLOCK_COLS,
+      height: BLOCK_SIZE * BLOCK_ROWS,
+      fill: 'black',
+    }).addChildTo(this);
+    blockArea.x = this.gridX.center();
+    blockArea.top = 0;
     // グループ 
     this.dynamicGroup = DisplayElement().addChildTo(this);
     // 変数
@@ -72,12 +81,13 @@ phina.define('MainScene', {
     }, this);
     // 中心ブロック
     var org = this.dynamicGroup.children.first;
-    org.x = this.gridX.center();
+    org.x = this.gridX.center() + BLOCK_OFFSET;
 //    org.y = 0;
-    org.y = this.gridY.center();
+    org.y = this.gridY.center() + BLOCK_OFFSET;
     // 配置情報データをもとにブロックを配置
     this.dynamicGroup.children.each(function(block, i) {
-      block.position = Vector2.add(org.position, Vector2.mul(BLOCK_LAYOUT[type][i], BLOCK_SIZE));
+      block.x = org.x + BLOCK_LAYOUT[type][i].x * BLOCK_SIZE;
+      block.y = org.y + BLOCK_LAYOUT[type][i].y * BLOCK_SIZE;
       block.indexPos = this.coordToIndex(block.position);
     }, this);
   },
