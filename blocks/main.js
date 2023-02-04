@@ -8,7 +8,7 @@ const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
 const EDGE_RIGHT = 13
-const INTERVAL = 0.5
+const INTERVAL = 1000;
 // アセット
 const ASSETS = {
   // 画像
@@ -49,6 +49,15 @@ phina.define('MainScene', {
     // ブロック作成
     this.createBlock();
   },
+  // 毎フレーム処理
+  update: function(app) {
+    this.curTime += app.deltaTime;
+    // 一定時間毎にブロック落下
+    if (this.curTime - this.prevTime > this.interval) {
+      this.moveBlockY();
+      this.prevTime = this.curTime;
+    }
+  },
   // ブロック作成関数
   createBlock: function() {
     // 種類をランダムに決める
@@ -71,10 +80,29 @@ phina.define('MainScene', {
       block.position = Vector2.add(org.position, Vector2.mul(BLOCK_LAYOUT[type][i], BLOCK_SIZE));
       block.indexPos = this.coordToIndex(block.position);
     }, this);
-    
-},
-   // 座標値からインデックス値へ変換
-   coordToIndex: function(vec) {
+  },
+  // ブロック落下処理
+  moveBlockY: function() {
+    // 1ブロック分落下
+    this.moveBlock(Vector2.DOWN);
+/*    // 画面下到達か固定ブロックにヒット
+    if _hit_bottom() or _hit_static():
+      # ブロックを戻す
+      _move_block(Vector2.UP)
+      # 固定ブロックへ追加
+      _dynamic_to_static()
+      #
+      _check_remove_line()*/
+  },
+  // ブロック移動処理
+  moveBlock: function(vec) {
+    this.dynamicGroup.children.each(function(block) {
+      block.position.add(Vector2.mul(vec, BLOCK_SIZE));
+      block.indexPos.add(vec);
+    });  
+  },
+  // 座標値からインデックス値へ変換
+  coordToIndex: function(vec) {
     const x = Math.floor(vec.x / BLOCK_SIZE);
     const y = Math.floor(vec.y / BLOCK_SIZE);
     return Vector2(x, y);
