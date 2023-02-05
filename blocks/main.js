@@ -1,5 +1,3 @@
-const phina = require("phina");
-
 phina.globalize();
 // 定数
 const BLOCK_SIZE = 40
@@ -28,7 +26,6 @@ const BLOCK_LAYOUT = [
   [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(-1, 0)],
   [Vector2(0, 0), Vector2(1, 0), Vector2(-1, 0), Vector2(0, -1)],
   [Vector2(0, 0), Vector2(0, -1), Vector2(1, -1), Vector2(1, 0)]]
-
 // キー用配列
 const KEY_ARRAY = [
   ["left", Vector2.LEFT],
