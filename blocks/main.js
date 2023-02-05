@@ -1,3 +1,5 @@
+const phina = require("phina");
+
 phina.globalize();
 // 定数
 const BLOCK_SIZE = 40
