@@ -20,10 +20,9 @@ const ASSETS = {
 };
 // メインシーン
 phina.define('MainScene', {
-  superClass: 'DisplayScene',
+  superClass: 'phina.display.DisplayScene',
   /**
    * @constructor
-   * 
    */
   init: function () {
     // 親クラス初期化
@@ -31,9 +30,9 @@ phina.define('MainScene', {
     // 背景色
     this.backgroundColor = 'black';
     // グリッド
-    this.grid = Grid(SCREEN_WIDTH, PIECE_NUM_X);
+    this.grid = phina.util.Grid(SCREEN_WIDTH, PIECE_NUM_X);
     // ピースグループ
-    this.pieceGroup = DisplayElement().addChildTo(this);
+    this.pieceGroup = phina.display.DisplayElement().addChildTo(this);
     // ピース配置
     this.createPiece();
   },
@@ -51,7 +50,7 @@ phina.define('MainScene', {
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
       piece.y = this.grid.span(sy) + PIECE_OFFSET;
       // グリッド上のインデックス値
-      piece.indexPos = Vector2(sx, sy);
+      piece.indexPos = phina.geom.Vector2(sx, sy);
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
@@ -88,7 +87,7 @@ phina.define('MainScene', {
     if ((piece.indexPos.x === blank.indexPos.x && dy === 1) ||
       (piece.indexPos.y === blank.indexPos.y && dx === 1)) {
       // タッチされたピース位置を記憶
-      const tPos = Vector2(piece.x, piece.y);
+      const tPos = phina.geom.Vector2(piece.x, piece.y);
       // ピース移動処理
       piece.tweener
            .to({x:blank.x, y:blank.y}, 100)
@@ -104,28 +103,34 @@ phina.define('MainScene', {
   coordToIndex: function (vec) {
     const x = Math.floor(vec.x / PIECE_SIZE);
     const y = Math.floor(vec.y / PIECE_SIZE);
-    return Vector2(x, y);
+    return phina.geom.Vector2(x, y);
   },
 });
 // ピースクラス
 phina.define('Piece', {
   // Spriteを継承
-  superClass: 'Sprite',
-  // コンストラクタ
+  superClass: 'phina.display.Sprite',
+  /**
+   * @constructor
+   * @param {number} num
+   */
   init: function (num) {
     // 親クラス初期化
     this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
     // 数字
+    /** @type {number} */
     this.num = num;
-    // フレーム指定
+    // フレーム
+    /** @type {number} */
     this.frameIndex = this.num - 1;
     // 位置インデックス
-    this.indexPos = Vector2.ZERO;
+    /** @type {number} */
+    this.indexPos = phina.geom.Vector2.ZERO;
   },
 });
 // メイン
 phina.main(function () {
-  const app = GameApp({
+  const app = phina.game.GameApp({
     startLabel: 'main',
     // アセット読み込み
     assets: ASSETS,
