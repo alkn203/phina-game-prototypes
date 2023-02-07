@@ -16,9 +16,7 @@ const ASSETS = {
 // メインシーン
 phina.define('MainScene', {
   superClass: 'DisplayScene',
-  /**
-   * @constructor
-   */
+  // コンストラクタ
   init: function () {
     // 親クラス初期化
     this.superInit();
@@ -110,7 +108,6 @@ phina.define('Piece', {
     // 親クラス初期化
     this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
     // 数字
-    /** @type {number} */
     this.num = num;
     // フレーム
     this.frameIndex = this.num - 1;
@@ -120,7 +117,7 @@ phina.define('Piece', {
 });
 // メイン
 phina.main(function () {
-  const app = phina.game.GameApp({
+  const app = GameApp({
     startLabel: 'main',
     // アセット読み込み
     assets: ASSETS,
