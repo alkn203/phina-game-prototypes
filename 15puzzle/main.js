@@ -1,9 +1,4 @@
-// @ts-check
-
-/** @type {import("./index").phina} */
-// import phina from "./index.d.ts";
-
-//phina.globalize();
+phina.globalize();
 // 定数
 const SCREEN_WIDTH = 640;            // 画面横サイズ
 const SCREEN_HEIGHT = 960;           // 画面縦サイズ
@@ -20,7 +15,7 @@ const ASSETS = {
 };
 // メインシーン
 phina.define('MainScene', {
-  superClass: 'phina.display.DisplayScene',
+  superClass: 'DisplayScene',
   /**
    * @constructor
    */
@@ -30,9 +25,9 @@ phina.define('MainScene', {
     // 背景色
     this.backgroundColor = 'black';
     // グリッド
-    this.grid = phina.util.Grid(SCREEN_WIDTH, PIECE_NUM_X);
+    this.grid = Grid(SCREEN_WIDTH, PIECE_NUM_X);
     // ピースグループ
-    this.pieceGroup = phina.display.DisplayElement().addChildTo(this);
+    this.pieceGroup = DisplayElement().addChildTo(this);
     // ピース配置
     this.createPiece();
   },
@@ -50,7 +45,7 @@ phina.define('MainScene', {
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
       piece.y = this.grid.span(sy) + PIECE_OFFSET;
       // グリッド上のインデックス値
-      piece.indexPos = phina.geom.Vector2(sx, sy);
+      piece.indexPos = Vector2(sx, sy);
       // タッチを有効にする
       piece.setInteractive(true);
       // タッチされた時の処理
@@ -87,7 +82,7 @@ phina.define('MainScene', {
     if ((piece.indexPos.x === blank.indexPos.x && dy === 1) ||
       (piece.indexPos.y === blank.indexPos.y && dx === 1)) {
       // タッチされたピース位置を記憶
-      const tPos = phina.geom.Vector2(piece.x, piece.y);
+      const tPos = Vector2(piece.x, piece.y);
       // ピース移動処理
       piece.tweener
            .to({x:blank.x, y:blank.y}, 100)
@@ -103,22 +98,14 @@ phina.define('MainScene', {
   coordToIndex: function (vec) {
     const x = Math.floor(vec.x / PIECE_SIZE);
     const y = Math.floor(vec.y / PIECE_SIZE);
-    return phina.geom.Vector2(x, y);
+    return Vector2(x, y);
   },
 });
 // ピースクラス
-/**
- * @typedef {Object} Piece
- * @property {number} num
- * @property {number} frameIndex
- */ 
 phina.define('Piece', {
   // Spriteを継承
-  superClass: 'phina.display.Sprite',
-  /**
-   * @constructor
-   * @param {number} num
-   */
+  superClass: 'Sprite',
+  // コンストラクタ
   init: function (num) {
     // 親クラス初期化
     this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
@@ -126,11 +113,9 @@ phina.define('Piece', {
     /** @type {number} */
     this.num = num;
     // フレーム
-    /** @type {number} */
     this.frameIndex = this.num - 1;
     // 位置インデックス
-    /** @type {number} */
-    this.indexPos = phina.geom.Vector2.ZERO;
+    this.indexPos = Vector2.ZERO;
   },
 });
 // メイン
