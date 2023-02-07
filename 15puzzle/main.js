@@ -1,6 +1,6 @@
 // @ts-check
 
-/** @type {import("./index.d").phina} */
+/** @type {import("./index").phina} */
 // import phina from "./index.d.ts";
 
 //phina.globalize();
@@ -21,7 +21,10 @@ const ASSETS = {
 // メインシーン
 phina.define('MainScene', {
   superClass: 'DisplayScene',
-  // コンストラクタ
+  /**
+   * @constructor
+   * 
+   */
   init: function () {
     // 親クラス初期化
     this.superInit();
