@@ -1,4 +1,9 @@
-phina.globalize();
+// @ts-check
+// @ts-check
+
+/** @type {import("./index.d").phina} */
+
+//phina.globalize();
 // 定数
 const SCREEN_WIDTH = 640;            // 画面横サイズ
 const SCREEN_HEIGHT = 960;           // 画面縦サイズ
