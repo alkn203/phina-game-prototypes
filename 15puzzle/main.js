@@ -1,7 +1,7 @@
 // @ts-check
 
 /** @type {import("./index.d").phina} */
-// import phina from "./index";
+// import phina from "./index.d.ts";
 
 //phina.globalize();
 // 定数
