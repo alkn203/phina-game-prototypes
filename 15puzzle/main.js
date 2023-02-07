@@ -107,6 +107,11 @@ phina.define('MainScene', {
   },
 });
 // ピースクラス
+/**
+ * @typedef {Object} Piece
+ * @property {number} num
+ * @property {number} frameIndex
+ */ 
 phina.define('Piece', {
   // Spriteを継承
   superClass: 'phina.display.Sprite',
