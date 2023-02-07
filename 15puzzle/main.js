@@ -1,5 +1,4 @@
 // @ts-check
-// @ts-check
 
 /** @type {import("./index.d").phina} */
 
