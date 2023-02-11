@@ -1,3 +1,9 @@
+
+//@ts-check
+
+// 型定義ファイルを参照
+/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
+
 phina.globalize();
 // 定数
 const SCREEN_WIDTH = 640;            // 画面横サイズ
@@ -36,8 +42,10 @@ phina.define('MainScene', {
       const sx = i % PIECE_NUM_X;
       const sy = Math.floor(i / PIECE_NUM_X);
       // 番号
+      /** @type {number} */
       const num = i + 1;
       // ピース作成
+      /** @type {Piece} */
       const piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
@@ -58,9 +66,13 @@ phina.define('MainScene', {
     }, this);
   },
   // 16番ピース（空白）を取得
+  /**
+   * @returns {Piece}
+   */
   getBlankPiece: function () {
-    let result = null;
-    this.pieceGroup.children.some(function(piece) {
+    /** @type {Piece} */
+    let result;
+    this.pieceGroup.children.some(function(/** @type {Piece} */piece) {
       // 16番ピースを結果に格納I
       if (piece.num === 16) {
         result = piece;
@@ -70,6 +82,9 @@ phina.define('MainScene', {
     return result;
   },
   // ピースの移動処理
+  /**
+   * @param {Piece} piece
+   */
   movePiece: function (piece) {
     // 空白ピースを得る
     const blank = this.getBlankPiece();
@@ -93,6 +108,10 @@ phina.define('MainScene', {
     }
   },
   // 座標値からインデックス値へ変換
+  /**
+   * @param {Vector2} vec
+   * @returns {Vector2}
+   */
   coordToIndex: function (vec) {
     const x = Math.floor(vec.x / PIECE_SIZE);
     const y = Math.floor(vec.y / PIECE_SIZE);
@@ -100,10 +119,20 @@ phina.define('MainScene', {
   },
 });
 // ピースクラス
+/**
+ * @typedef Piece
+ * @property {number} num
+ * @property {number} frameIndex
+ * @property {Vector2} indexPos
+ */
 phina.define('Piece', {
   // Spriteを継承
   superClass: 'Sprite',
   // コンストラクタ
+  /**
+   * @constructor
+   * @param {number} num
+   */
   init: function (num) {
     // 親クラス初期化
     this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
