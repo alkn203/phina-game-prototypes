@@ -53,7 +53,7 @@ phina.define('MainScene', {
       const sx = i % BLOCK_NUM_X;
       const sy = Math.floor(i / BLOCK_NUM_X);
       // ブロック作成
-      /** @type [Block}*/
+      /** @type {Block}*/
       const block = Block().addChildTo(this.blockGroup);
       // Gridを利用して配置
       block.x = this.gridX.span(sx) + OFFSET_X + BLOCK_WIDTH;
