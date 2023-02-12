@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
-    "checkJs": true
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+        "phina.js": [
+            "node_modules/phina.js.d.ts/globalized"
+        ]
+    }
   }
 }

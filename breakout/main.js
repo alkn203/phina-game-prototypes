@@ -53,6 +53,7 @@ phina.define('MainScene', {
       const sx = i % BLOCK_NUM_X;
       const sy = Math.floor(i / BLOCK_NUM_X);
       // ブロック作成
+      /** @type [Block}*/
       const block = Block().addChildTo(this.blockGroup);
       // Gridを利用して配置
       block.x = this.gridX.span(sx) + OFFSET_X + BLOCK_WIDTH;
@@ -81,6 +82,7 @@ phina.define('MainScene', {
   },
   // マウス移動時
   onpointmove: function(e) {
+    /** @type {Paddle}*/
     var paddle = this.paddle;
     // 前のフレームからの移動距離
     const dx = e.pointer.dx * SENSE;
@@ -105,6 +107,7 @@ phina.define('MainScene', {
   },
   // 壁との当たり判定
   hitTestWall: function() {
+    /** @type {Ball} */
     const ball = this.ball;
     // 上
     if (ball.top < 0) {
@@ -125,9 +128,10 @@ phina.define('MainScene', {
   },
   // ブロックとの当たり判定
   hitTestBlock: function() {
+    /** @type {Ball} */
     const ball = this.ball;
     // ブロックグループをループ
-    this.blockGroup.children.some(function(block) {
+    this.blockGroup.children.some(function(/** @type {Block} */block) {
       if (ball.hitTestElement(block)) {
         // 上から
         if (ball.vec.y > 0 && ball.top < block.top) {
@@ -170,6 +174,9 @@ phina.define('MainScene', {
   },
 });
 // パドルクラス
+/**
+ * @typedef {Object} Paddle
+ */
 phina.define('Paddle', {
   // Spriteを継承
   superClass: 'Sprite',
@@ -180,6 +187,10 @@ phina.define('Paddle', {
   },
 });
 // ボールクラス
+/**
+ * @typedef Ball
+ * @property {Vector2} vec
+ */
 phina.define('Ball', {
   // Spriteを継承
   superClass: 'Sprite',
@@ -206,6 +217,9 @@ phina.define('Ball', {
   },
 });
 // ブロッククラス
+/**
+ * @typedef {Object} Block
+ */
 phina.define('Block', {
   // Spriteを継承
   superClass: 'Sprite',

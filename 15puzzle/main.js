@@ -1,8 +1,3 @@
-//@ts-check
-
-// 型定義ファイルを参照
-/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
-
 phina.globalize();
 // 定数
 const SCREEN_WIDTH = 640;            // 画面横サイズ
@@ -34,8 +29,10 @@ phina.define('MainScene', {
     // ピース配置
     this.createPiece();
   },
-  // ピース配置関数
-  createPiece: function () {
+  /**
+   * ピース配置
+   */
+  createPiece:function() {
     PIECE_NUM.times(function(i) {
       // グリッド配置用のインデックス値算出
       const sx = i % PIECE_NUM_X;
@@ -64,8 +61,8 @@ phina.define('MainScene', {
       }
     }, this);
   },
-  // 16番ピース（空白）を取得
   /**
+   * 16番ピース（空白）を取得
    * @returns {Piece}
    */
   getBlankPiece: function () {
@@ -80,8 +77,8 @@ phina.define('MainScene', {
     });
     return result;
   },
-  // ピースの移動処理
   /**
+   * ピースの移動処理
    * @param {Piece} piece
    */
   movePiece: function (piece) {
@@ -106,8 +103,8 @@ phina.define('MainScene', {
            .play();
     }
   },
-  // 座標値からインデックス値へ変換
   /**
+   * 座標値からインデックス値へ変換
    * @param {Vector2} vec
    * @returns {Vector2}
    */
@@ -117,8 +114,8 @@ phina.define('MainScene', {
     return Vector2(x, y);
   },
 });
-// ピースクラス
 /**
+ * ピースクラス
  * @typedef Piece
  * @property {number} num
  * @property {number} frameIndex
@@ -127,8 +124,8 @@ phina.define('MainScene', {
 phina.define('Piece', {
   // Spriteを継承
   superClass: 'Sprite',
-  // コンストラクタ
   /**
+   * コンストラクタ
    * @constructor
    * @param {number} num
    */
@@ -143,7 +140,9 @@ phina.define('Piece', {
     this.indexPos = Vector2.ZERO;
   },
 });
-// メイン
+/**
+ * メイン
+ */
 phina.main(function () {
   const app = GameApp({
     startLabel: 'main',
