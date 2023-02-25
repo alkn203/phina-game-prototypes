@@ -19,7 +19,7 @@ const ASSETS = {
     'paddle': 'assets/paddle.png',
     'ball': 'assets/ball.png',
     'block': 'assets/block.png',
-    'breakout': 'assets/breakout.png',
+    'breakout': 'assets/breakout',
   },
 };
 // メインシーン
@@ -184,11 +184,7 @@ phina.define('Paddle', {
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('breakout');
-    // 描画範囲
-    this.srcRect.set(0, 0, 128, 24);
-    // サイズ変更
-    this.setSize(128, 24)
+    this.superInit('paddle');
   },
 });
 // ボールクラス
@@ -202,11 +198,7 @@ phina.define('Ball', {
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('breakout');
-    // 描画範囲
-    this.srcRect.set(129, 0, 16, 16);
-    // サイズ変更
-    this.setSize(16, 16)
+    this.superInit('ball');
     // 移動ベクトル
     this.vec = Vector2.ZERO;
   },
@@ -214,8 +206,7 @@ phina.define('Ball', {
   move: function() {
     // 移動ベクトルを正規化して速さを乗じる
     this.vec.normalize().mul(BALL_SPEED);
-    this.x += this.vec.x | 0
-    this.y += this.vec.y | 0
+    this.moveBy(this.vec.x, this.vec.y);
   },
   // 横移動反射
   reflectX: function() {
