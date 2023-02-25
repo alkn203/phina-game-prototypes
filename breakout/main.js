@@ -16,9 +16,6 @@ const X_ADJ = 6;                   // パドル反射調整値
 const ASSETS = {
   // 画像
   image: {
-    'paddle': 'assets/paddle.png',
-    'ball': 'assets/ball.png',
-    'block': 'assets/block.png',
     'breakout': 'assets/breakout.png',
   },
 };
@@ -60,11 +57,14 @@ phina.define('MainScene', {
       block.x = this.gridX.span(sx) + OFFSET_X + BLOCK_WIDTH;
       block.y = this.gridY.span(sy) + OFFSET_Y + BLOCK_HEIGHT;
       // 画像変更
+      if (i <= 15) {
+        block.setFrame(0);
+      }
       if (i > 15) {
-        block.frameIndex = 1;
+        block.setFrame(1);
       }
       if (i > 31) {
-        block.frameIndex = 2;
+        block.setFrame(2);
       }
     }, this);
   },
@@ -236,7 +236,15 @@ phina.define('Block', {
   // コンストラクタ
   init: function() {
     // 親クラス初期化
-    this.superInit('block', BLOCK_WIDTH, BLOCK_HEIGHT);
+    this.superInit('breakout');
+    // サイズ変更
+    this.setSize(BLOCK_WIDTH, BLOCK_HEIGHT)
+  },
+  /** 描画範囲指定
+   * @param {number} frame
+   */
+  setFrame: function(frame) {
+    this.srcRect.set(frame * BLOCK_WIDTH, 25, BLOCK_WIDTH, BLOCK_HEIGHT);
   },
 });
 // メイン
