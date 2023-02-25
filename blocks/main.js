@@ -4,7 +4,7 @@ const BLOCK_SIZE = 40
 const BLOCK_OFFSET = BLOCK_SIZE / 2;
 const BLOCK_COLS = 10
 const BLOCK_ROWS = 20
-const BLOCK_NUM = 4
+const BLOCK_NUMS = 4
 const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
@@ -71,7 +71,8 @@ phina.define('MainScene', {
     // 種類をランダムに決める
     const type = Random.randint(0, BLOCK_TYPE - 1);
     // 落下ブロック作成
-    BLOCK_NUM.times(function() {
+    const num = BLOCK_NUM;
+    num.times(function() {
       const block = Block().addChildTo(this.dynamicGroup);
       // ブロックの種類
       block.type = type;
@@ -81,8 +82,7 @@ phina.define('MainScene', {
     // 中心ブロック
     var org = this.dynamicGroup.children.first;
     org.x = this.gridX.center() + BLOCK_OFFSET;
-//    org.y = 0;
-    org.y = this.gridY.center() + BLOCK_OFFSET;
+    org.y = 0;
     // 配置情報データをもとにブロックを配置
     this.dynamicGroup.children.each(function(block, i) {
       block.x = org.x + BLOCK_LAYOUT[type][i].x * BLOCK_SIZE;

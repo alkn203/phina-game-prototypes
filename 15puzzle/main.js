@@ -1,12 +1,13 @@
 phina.globalize();
 // 定数
-const SCREEN_WIDTH = 640;            // 画面横サイズ
-const SCREEN_HEIGHT = 960;           // 画面縦サイズ
+const SCREEN_W = 640;            // 画面横サイズ
+const SCREEN_H = 960;           // 画面縦サイズ
 const PIECE_SIZE = SCREEN_WIDTH / 4; // グリッドのサイズ
 const PIECE_NUM = 16;                // ピース数
 const PIECE_NUM_X = 4;               // 横のピース数
 const PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
 // アセット
+// @ts-ignore
 const ASSETS = {
   // 画像
   image: {
@@ -25,7 +26,8 @@ phina.define('MainScene', {
     // グリッド
     this.grid = Grid(SCREEN_WIDTH, PIECE_NUM_X);
     // ピースグループ
-    this.pieceGroup = DisplayElement().addChildTo(this);
+    // @ts-ignore
+    this.pieceGroup = DisplayElement().addChild(this);
     // ピース配置
     this.createPiece();
   },
@@ -33,7 +35,7 @@ phina.define('MainScene', {
    * ピース配置
    */
   createPiece:function() {
-    PIECE_NUM.times(function(i) {
+    PIECE_NUM.times(function(/** @type {number}*/i) {
       // グリッド配置用のインデックス値算出
       const sx = i % PIECE_NUM_X;
       const sy = Math.floor(i / PIECE_NUM_X);
@@ -42,6 +44,7 @@ phina.define('MainScene', {
       const num = i + 1;
       // ピース作成
       /** @type {Piece} */
+      // @ts-ignore
       const piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
       piece.x = this.grid.span(sx) + PIECE_OFFSET;
@@ -49,14 +52,17 @@ phina.define('MainScene', {
       // グリッド上のインデックス値
       piece.indexPos = Vector2(sx, sy);
       // タッチを有効にする
+      // @ts-ignore
       piece.setInteractive(true);
       // タッチされた時の処理
+      // @ts-ignore
       piece.on('pointend', () => {
         // ピース移動処理
         this.movePiece(piece);
       });
       // 16番のピースは非表示
       if (num === 16) {
+        // @ts-ignore
         piece.hide();
       }
     }, this);
