@@ -30,23 +30,31 @@ phina.define('MainScene', {
     this.pieceGroup = DisplayElement().addChild(this);
     // 空白ピース
     this.blank = null;
+    // シャッフルボタン配置
+    this.createButton();
     // ピース配置
     this.createPiece();
-// シャッフルボタン
-var shuffleButton = Button({
-  text: 'SHUFFLE',
-}).addChildTo(this).setPosition(this.gridX.center(), this.gridY.span(13));
-// ボタンプッシュ時処理
-shuffleButton.onpush = function() {
-    // ピースをシャッフル
-    (100).times(function() {
-      self.shufflePieces();  
-    });
-};
+  },
+  /**
+   * シャッフルボタン作成
+   *//
+  cteateButton: function() {
+    var button = Button({
+      text: 'SHUFFLE',
+    }).addChildTo(this);
+    button.x = this.gridX.center();
+    button.y = this.gridY.span(13);
+    // ボタンプッシュ時処理
+    button.onpush = function() {
+      // ピースをシャッフル
+      for (let i = 0; i < 100; i++) {
+        this.shufflePiece();  
+      }
+    };
   },
   /**
    * ピース配置
-   */
+   *//
   createPiece: function() {
     /** @type {Grid} */
     var grid = this.grid;
@@ -89,16 +97,15 @@ shuffleButton.onpush = function() {
    * ピースの移動処理
    * @param {Piece} piece
    */
-  movePiece: function(piece) {
+  movePiece: function(piece, instantly = false) {
     // 空白ピース
     /** @type {Piece} */
     const blank = this.blank;
-// 即入れ替え
-    if (isInstantly) {
-      var tmpX = piece.x;
-      var tmpY = piece.y;
+    // 即入れ替え
+    if (instantly) {
+      const pos = Vector2(piece.x, piece.y);
       piece.setPosition(blank.x, blank.y);
-      blank.setPosition(tmpX, tmpY);
+      blank.setPosition(pos.x, pos.y);
       return;
     }
     // x, yの座標差の絶対値
