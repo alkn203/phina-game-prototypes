@@ -1,7 +1,7 @@
 phina.globalize();
 // 定数
-const SCREEN_W = 640;            // 画面横サイズ
-const SCREEN_H = 960;           // 画面縦サイズ
+const SCREEN_WIDTH = 640;            // 画面横サイズ
+const SCREEN_HEIGHT = 960;           // 画面縦サイズ
 const PIECE_SIZE = SCREEN_W / 4; // グリッドのサイズ
 const PIECE_NUM = 16;                // ピース数
 const PIECE_NUM_X = 4;               // 横のピース数
@@ -15,6 +15,7 @@ const ASSETS = {
   },
 };
 // メインシーン
+// @ts-ignore
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
@@ -50,6 +51,7 @@ phina.define('MainScene', {
       for (let i = 0; i < 100; i++) {
         this.shufflePiece();  
       }
+    // @ts-ignore
     };
   },
   /**
