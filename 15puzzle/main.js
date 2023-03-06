@@ -37,7 +37,7 @@ phina.define('MainScene', {
   },
   /**
    * シャッフルボタン作成
-   *//
+   */
   cteateButton: function() {
     var button = Button({
       text: 'SHUFFLE',
