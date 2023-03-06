@@ -32,6 +32,17 @@ phina.define('MainScene', {
     this.blank = null;
     // ピース配置
     this.createPiece();
+// シャッフルボタン
+var shuffleButton = Button({
+  text: 'SHUFFLE',
+}).addChildTo(this).setPosition(this.gridX.center(), this.gridY.span(13));
+// ボタンプッシュ時処理
+shuffleButton.onpush = function() {
+    // ピースをシャッフル
+    (100).times(function() {
+      self.shufflePieces();  
+    });
+};
   },
   /**
    * ピース配置
@@ -82,6 +93,14 @@ phina.define('MainScene', {
     // 空白ピース
     /** @type {Piece} */
     const blank = this.blank;
+// 即入れ替え
+    if (isInstantly) {
+      var tmpX = piece.x;
+      var tmpY = piece.y;
+      piece.setPosition(blank.x, blank.y);
+      blank.setPosition(tmpX, tmpY);
+      return;
+    }
     // x, yの座標差の絶対値
     const dx = Math.abs(piece.indexPos.x - blank.indexPos.x);
     const dy = Math.abs(piece.indexPos.y - blank.indexPos.y);
