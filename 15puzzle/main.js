@@ -45,7 +45,7 @@ phina.define('MainScene', {
     button.x = this.gridX.center();
     button.y = this.gridY.span(13);
     // ボタンプッシュ時処理
-    button.onpush = function() {
+    button.on('push', () => {
       // ピースをシャッフル
       for (let i = 0; i < 100; i++) {
         this.shufflePiece();  
