@@ -1,7 +1,10 @@
+// 型定義ファイルを参照
+/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
+
 phina.globalize();
 // 定数
-const SCREEN_WIDTH = 640;            // 画面横サイズ
-const SCREEN_HEIGHT = 960;           // 画面縦サイズ
+const SCREEN_W = 640;            // 画面横サイズ
+const SCREEN_H = 960;           // 画面縦サイズ
 const PIECE_SIZE = SCREEN_W / 4; // グリッドのサイズ
 const PIECE_NUM = 16;                // ピース数
 const PIECE_NUM_X = 4;               // 横のピース数
@@ -15,7 +18,6 @@ const ASSETS = {
   },
 };
 // メインシーン
-// @ts-ignore
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
@@ -27,7 +29,6 @@ phina.define('MainScene', {
     // グリッド
     this.grid = Grid(SCREEN_W, PIECE_NUM_X);
     // ピースグループ
-    // @ts-ignore
     this.pieceGroup = DisplayElement().addChild(this);
     // 空白ピース
     this.blank = null;
@@ -39,10 +40,8 @@ phina.define('MainScene', {
   /**
    * シャッフルボタン作成
    */
-  cteateButton: function() {
-    var button = Button({
-      text: 'SHUFFLE',
-    }).addChildTo(this);
+  createButton: function() {
+    var button = Button({ text: 'SHUFFLE' }).addChildTo(this);
     button.x = this.gridX.center();
     button.y = this.gridY.span(13);
     // ボタンプッシュ時処理
@@ -51,12 +50,11 @@ phina.define('MainScene', {
       for (let i = 0; i < 100; i++) {
         this.shufflePiece();  
       }
-    // @ts-ignore
-    };
+    });
   },
   /**
    * ピース配置
-   *//
+   */
   createPiece: function() {
     /** @type {Grid} */
     var grid = this.grid;
@@ -69,18 +67,13 @@ phina.define('MainScene', {
       const num = i + 1;
       // ピース作成
       /** @type {Piece} */
-      // @ts-ignore
       const piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
-      // @ts-ignore
       piece.x = grid.span(sx) + PIECE_OFFSET;
-      // @ts-ignore
       piece.y = grid.span(sy) + PIECE_OFFSET;
       // タッチを有効にする
-      // @ts-ignore
       piece.setInteractive(true);
       // タッチされた時の処理
-      // @ts-ignore
       piece.on('pointend', () => {
         // ピース移動処理
         this.movePiece(piece);
@@ -141,13 +134,13 @@ phina.define('MainScene', {
         if (Math.abs(i + j) === 1) {
           const x = blank.x + i * PIECE_SIZE;
           const y = blank.y + j * PIECE_SIZE;
-          condt target = this.getPiece(x, y);
+          const target = this.getPiece(x, y);
           if (target) {
             arr.push(target);
           }   
         }
-      });
-    });
+      }
+    }
     // 隣接ピースからランダムに選択して空白ピースと入れ替える
     this.movePiece(arr.random(), true);
     arr.clear();
@@ -167,7 +160,9 @@ phina.define('MainScene', {
       }
     }
     return null;
+  }
 });
+    
 /**
  * ピースクラス
  * @typedef Piece
@@ -184,7 +179,6 @@ phina.define('Piece', {
    */
   init: function (num) {
     // 親クラス初期化
-    // @ts-ignore
     this.superInit('pieces', PIECE_SIZE, PIECE_SIZE);
     // 数字
     this.num = num;
