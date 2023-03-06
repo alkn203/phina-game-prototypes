@@ -1,6 +1,3 @@
-// 型定義ファイルを参照
-/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
-
 phina.globalize();
 // 定数
 const PANEL_SIZE = 64; // パネルサイズ
