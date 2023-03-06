@@ -150,6 +150,21 @@ phina.define('MainScene', {
     this.movePiece(arr.random(), true);
     arr.clear();
   },
+  /**
+  * 指定された座標のピースを返す
+  */
+  getPiece: function(x, y) {
+    const children = this.pieceGroup.children;
+    const len = children.length;
+    
+    for (let i = 0; i < len; i++) {
+      const piece = children[i];
+      //
+      if (piece.x === x && piece.y === y) {
+        return piece;
+      }
+    }
+    return null;
 });
 /**
  * ピースクラス
