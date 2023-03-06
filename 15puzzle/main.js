@@ -74,8 +74,6 @@ phina.define('MainScene', {
       piece.x = grid.span(sx) + PIECE_OFFSET;
       // @ts-ignore
       piece.y = grid.span(sy) + PIECE_OFFSET;
-      // グリッド上のインデックス値
-      piece.indexPos = Vector2(sx, sy);
       // タッチを有効にする
       // @ts-ignore
       piece.setInteractive(true);
@@ -109,59 +107,48 @@ phina.define('MainScene', {
       return;
     }
     // x, yの座標差の絶対値
-    const dx = Math.abs(piece.indexPos.x - blank.indexPos.x);
-    const dy = Math.abs(piece.indexPos.y - blank.indexPos.y);
+    const dx = Math.abs(piece.x - blank.x);
+    const dy = Math.abs(piece.y - blank.y);
     // 隣り合わせの判定
-    if ((piece.indexPos.x === blank.indexPos.x && dy === 1) ||
-      (piece.indexPos.y === blank.indexPos.y && dx === 1)) {
+    if ((piece.x === blank.x && dy === PIECE_SIZE) ||
+      (piece.y === blank.y && dx === PIECE_SIZE)) {
       // タッチされたピース位置を記憶
       // @ts-ignore
-      const tPos = Vector2(piece.x, piece.y);
+      const pos = Vector2(piece.x, piece.y);
       // ピース移動処理
       // @ts-ignore
       piece.tweener.to({x:blank.x, y:blank.y}, 100)
                    .call(() => {
                      // @ts-ignore
-                     blank.setPosition(tPos.x, tPos.y);
-                     // @ts-ignore
-                     piece.indexPos = this.coordToIndex(piece.position);
-                     // @ts-ignore
-                     blank.indexPos = this.coordToIndex(blank.position);
+                     blank.setPosition(pos.x, pos.y);
                    })
                    .play();
     }
   },
-// ピースをシャッフルする
-  shufflePieces: function() {
-    var self = this;
+  /**
+   * ピースをシャッフルする
+   */
+  shufflePiece: function() {
     // 隣接ピース格納用
-    var pieces = [];
+    var arr = [];
     // 空白ピースを得る
-    var blank = this.getBlankPiece();
+    var blank = this.blank;
     // 上下左右隣りのピースがあれば配列に追加
-    [1, 0, -1].each(function(i) {
-      [1, 0, -1].each(function(j) {
-        if (i != j) {
-          var x = blank.x + i * GRID_SIZE;
-          var y = blank.y + j * GRID_SIZE;
-          var target = self.getPieceByXY(x, y);
-          if (target) pieces.push(target);
+    for (let i = -1; i < 2; i++) {
+      for (let j = -1; j < 2; j++) {
+        if (Math.abs(i + j) === 1) {
+          const x = blank.x + i * PIECE_SIZE;
+          const y = blank.y + j * PIECE_SIZE;
+          condt target = this.getPiece(x, y);
+          if (target) {
+            arr.push(target);
+          }   
         }
       });
     });
     // 隣接ピースからランダムに選択して空白ピースと入れ替える
-    this.movePiece(pieces.random(), 'instantly');
-    pieces.clear();
-  },
-  /**
-   * 座標値からインデックス値へ変換
-   * @param {Vector2} vec
-   * @returns {Vector2}
-   */
-  coordToIndex: function(vec) {
-    const x = Math.floor(vec.x / PIECE_SIZE);
-    const y = Math.floor(vec.y / PIECE_SIZE);
-    return Vector2(x, y);
+    this.movePiece(arr.random(), true);
+    arr.clear();
   },
 });
 /**
@@ -169,7 +156,6 @@ phina.define('MainScene', {
  * @typedef Piece
  * @property {number} num
  * @property {number} frameIndex
- * @property {Vector2} indexPos
  */
 phina.define('Piece', {
   // Spriteを継承
@@ -187,8 +173,6 @@ phina.define('Piece', {
     this.num = num;
     // フレーム
     this.frameIndex = this.num - 1;
-    // 位置インデックス
-    this.indexPos = Vector2.ZERO;
   },
 });
 /**
