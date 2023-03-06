@@ -105,6 +105,28 @@ phina.define('MainScene', {
                    .play();
     }
   },
+// ピースをシャッフルする
+  shufflePieces: function() {
+    var self = this;
+    // 隣接ピース格納用
+    var pieces = [];
+    // 空白ピースを得る
+    var blank = this.getBlankPiece();
+    // 上下左右隣りのピースがあれば配列に追加
+    [1, 0, -1].each(function(i) {
+      [1, 0, -1].each(function(j) {
+        if (i != j) {
+          var x = blank.x + i * GRID_SIZE;
+          var y = blank.y + j * GRID_SIZE;
+          var target = self.getPieceByXY(x, y);
+          if (target) pieces.push(target);
+        }
+      });
+    });
+    // 隣接ピースからランダムに選択して空白ピースと入れ替える
+    this.movePiece(pieces.random(), 'instantly');
+    pieces.clear();
+  },
   /**
    * 座標値からインデックス値へ変換
    * @param {Vector2} vec
