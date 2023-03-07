@@ -10,7 +10,6 @@ const PIECE_NUM = 16;                // ピース数
 const PIECE_NUM_X = 4;               // 横のピース数
 const PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
 // アセット
-// @ts-ignore
 const ASSETS = {
   // 画像
   image: {
@@ -81,7 +80,6 @@ phina.define('MainScene', {
       // 16番のピースは非表示
       if (num === 16) {
         this.blank = piece;
-        // @ts-ignore
         piece.hide();
       }
     }
@@ -111,10 +109,8 @@ phina.define('MainScene', {
       // @ts-ignore
       const pos = Vector2(piece.x, piece.y);
       // ピース移動処理
-      // @ts-ignore
       piece.tweener.to({x:blank.x, y:blank.y}, 100)
                    .call(() => {
-                     // @ts-ignore
                      blank.setPosition(pos.x, pos.y);
                    })
                    .play();
@@ -122,6 +118,10 @@ phina.define('MainScene', {
   },
   /**
    * ピースをシャッフルする
+   *
+   * @param {number} x
+   * @param {number} y
+   * @return {Piece | null} 
    */
   shufflePiece: function() {
     // 隣接ピース格納用
@@ -154,7 +154,7 @@ phina.define('MainScene', {
     
     for (let i = 0; i < len; i++) {
       const piece = children[i];
-      //
+      // 座標が一致
       if (piece.x === x && piece.y === y) {
         return piece;
       }
