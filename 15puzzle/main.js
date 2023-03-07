@@ -3,12 +3,12 @@
 
 phina.globalize();
 // 定数
-const SCREEN_W = 640;            // 画面横サイズ
-const SCREEN_H = 960;           // 画面縦サイズ
-const PIECE_SIZE = SCREEN_W / 4; // グリッドのサイズ
-const PIECE_NUM = 16;                // ピース数
-const PIECE_NUM_X = 4;               // 横のピース数
-const PIECE_OFFSET = PIECE_SIZE / 2; // オフセット値
+const SCREEN_W = 640;
+const SCREEN_H = 960;
+const PIECE_SIZE = SCREEN_W / 4;
+const PIECE_NUM = 16;
+const PIECE_NUM_X = 4;
+const PIECE_OFFSET = PIECE_SIZE / 2;
 // アセット
 const ASSETS = {
   // 画像
@@ -118,10 +118,6 @@ phina.define('MainScene', {
   },
   /**
    * ピースをシャッフルする
-   *
-   * @param {number} x
-   * @param {number} y
-   * @return {Piece | null} 
    */
   shufflePiece: function() {
     // 隣接ピース格納用
@@ -147,6 +143,9 @@ phina.define('MainScene', {
   },
   /**
   * 指定された座標のピースを返す
+  * @param {number} x
+  * @param {number} y
+  * @return {Piece | null} 
   */
   getPiece: function(x, y) {
     const children = this.pieceGroup.children;
