@@ -1,14 +1,17 @@
+// 型定義ファイルを参照
+/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
+
 phina.globalize();
 // 定数
-const PANEL_SIZE = 64; // パネルサイズ
-const PANEL_NUM_X = 9; // 縦横のパネル数
-const PANEL_NUM = PANEL_NUM_X * PANEL_NUM_X; // 全体のパネル数
-const SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_X; // 画面縦横サイズ
-const PANEL_OFFSET = PANEL_SIZE / 2; // オフセット値
-const BOMB_NUM = 10; // 爆弾数
-const PANEL_FRAME = 10; // 初期パネルのフレームインデックス 
-const BOMB_FRAME = 11; // 爆弾のフレームインデックス 
-const EXP_FRAME = 12; // 爆弾爆発のフレームインデックス 
+const PANEL_SIZE = 64;
+const PANEL_NUM_X = 9;
+const PANEL_NUM = PANEL_NUM_X * PANEL_NUM_X;
+const SCREEN_SIZE = PANEL_SIZE * PANEL_NUM_X;
+const PANEL_OFFSET = PANEL_SIZE / 2;
+const BOMB_NUM = 10;
+const PANEL_FRAME = 10;
+const BOMB_FRAME = 11;
+const EXP_FRAME = 12;
 // アセット
 const ASSETS = {
   // 画像
@@ -24,19 +27,27 @@ phina.define('MainScene', {
     // 親クラス初期化
     this.superInit(options);
     // グリッド
-    const grid = Grid(SCREEN_SIZE, PANEL_NUM_X);
+    this.grid = Grid(SCREEN_SIZE, PANEL_NUM_X);
     // グループ
     this.panelGroup = DisplayElement().addChildTo(this);
-    // 爆弾位置をランダムに決めた配列を作成
+    // クリア判定用
+    this.oCount = 0;
+    // パネル作成
+    this.createPanel();
+  },
+  /**
+   * パネル作成
+   */
+  createPanel: function() {
     /**@type {boolean[]} */
     const bombs = [];
-
+    // 爆弾位置をランダムに決めた配列を作成
     PANEL_NUM.times(function() {
       bombs.push(false);
     });
     bombs.fill(true, 0, 10).shuffle();
     // パネル配置
-    PANEL_NUM.times(function(i) {
+    for (let i = 0; i < PANEL_NUM; i++) {
       // グリッド配置用のインデックス値算出
       const sx = i % PANEL_NUM_X;
       const sy = Math.floor(i / PANEL_NUM_X);
@@ -44,8 +55,8 @@ phina.define('MainScene', {
       /** @type {Panel} */
       const panel = Panel().addChildTo(this.panelGroup);
       // Gridを利用して配置
-      panel.x = grid.span(sx) + PANEL_OFFSET;
-      panel.y = grid.span(sy) + PANEL_OFFSET;
+      panel.x = this.grid.span(sx) + PANEL_OFFSET;
+      panel.y = this.grid.span(sy) + PANEL_OFFSET;
       // インデックス位置
       panel.indexPos = Vector2(sx, sy);
       // パネルに爆弾情報を紐づける
@@ -57,21 +68,23 @@ phina.define('MainScene', {
         // クリア判定
         this.checkClear();
       });
-    }, this);
-    // クリア判定用
-    this.oCount = 0;
-  },
-  // クリア判定
-  checkClear: function() {
-    if (this.oCount === PANEL_NUM - BOMB_NUM) {
-      // パネルを選択不可に
-      this.panelGroup.children.each(function(/** @type {Panel} */panel) {
-        panel.setInteractive(false);
-      });
     }
   },
-  // パネルを開く処理
   /**
+   * クリア判定
+   */
+  checkClear: function() {
+    if (this.oCount === PANEL_NUM - BOMB_NUM) {
+      const children = this.panelGroup.children;
+      const len = children.length
+      // パネルを選択不可に
+      for (let i = 0; i < len; i++) {
+        children[i].setInteractive(false);
+      }
+    }
+  },
+  /**
+   * パネルを開く処理
    * @param {Panel} panel
    */
   openPanel: function(panel) {
@@ -94,61 +107,69 @@ phina.define('MainScene', {
     let bombs = 0;
     const indexs = [-1, 0, 1];
     // 周りのパネルの爆弾数をカウント
-    indexs.each((i) => {
-      indexs.each((j) => {
+    for (let i = -1; i < 2; i++) {
+      for (let j = -1; j < 2; j++) {
         const pos = Vector2.add(panel.indexPos, Vector2(i, j));
         /** @type {Panel | null}*/
         const target = this.getPanel(pos);
         if (target && target.isBomb) {
           bombs++;
         }
-      });
-    });
+      }
+    }
     // パネルに数を表示
     panel.frameIndex = bombs;
     // 周りに爆弾がなければ再帰的に調べる
     if (bombs === 0) {
-      indexs.each((i) => {
-        indexs.each((j) => {
+      for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
           const pos = Vector2.add(panel.indexPos, Vector2(i, j));
           /** @type {Panel | null}*/
           const target = this.getPanel(pos);
           if (target) {
             this.openPanel(target);
           }
-        });
-      });
+        }
+      }
     }
   },
-  // 指定されたインデックス位置のパネルを得る
   /**
+   * 指定されたインデックス位置のパネルを得る
    * @param {Vector2} pos
+   * @return {Panel | null}
    */
   getPanel: function(pos) {
-    /** @type {Panel | null} */
-    let result = null;
-    
-    this.panelGroup.children.some(function(/** @type {Panel}*/panel) {
+    const children = this.panelGroup.children;
+    const len = children.length
+
+    for (let i = 0; i < len; i++) {
+      const panel = children[i];
+      
       if (panel.indexPos.equals(pos)){
-        result = panel;
-        return true;
+        return panel;
       } 
-    });
-    return result;
+    }
+    return null;
   },
-  // 爆弾を全て表示する
+  /**
+   * 爆弾を全て表示する
+   */
   showAllBombs: function() {
-    this.panelGroup.children.each(function(/** @type {Panel}} */ panel) {
+    const children = this.panelGroup.children;
+    const len = children.length
+
+    for (let i = 0; i < len; i++) {
+      const panel = children[i];
       panel.setInteractive(false);
       
       if (panel.isBomb && panel.frameIndex === PANEL_FRAME) {
         panel.frameIndex = BOMB_FRAME;
       }
-    }, this);
+    }
   },
 });
-// パネルクラス
 /**
+ * パネルクラス
  * @typedef Panel
  * @property {boolean} isOpen
  * @property {boolean} isBomb
