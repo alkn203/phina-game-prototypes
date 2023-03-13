@@ -119,7 +119,6 @@ phina.define('MainScene', {
       // 固定ブロックへ追加
       this.dynamicToStatic();
     }
-
   },
   /**
    * ブロック移動処理
@@ -153,16 +152,15 @@ phina.define('MainScene', {
   /**
    * 固定ブロックとの当たり判定
    */
-  hitStatic: function() {
+  hitStatic: function(): boolean {
     const children: Block[] = this.dynamicGroup.children;
     const len: number = children.length;
     const children2: Block[] = this.staticGroup.children;
     const len2: number = children2.length;
 
     for (let i = 0; i < len; i++) {
-      const block: Block = children[i];
-
       for (let j = 0; j < len2; j++) {
+        const block: Block = children[i];
         const target: Block = children2[j];
         // 位置が一致したら
         if (block.indexPos.equals(target.indexPos)) {
