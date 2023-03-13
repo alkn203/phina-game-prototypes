@@ -123,15 +123,16 @@ phina.define('MainScene', {
   /**
    * ブロック横移動処理
    */
-  moveBlockX: function() {
+  moveBlockX: function(app) {
+    const key = app.keyboard;
     // 配列ループ
     for(let i =　0; i < KEY_ARRAY.length; i++) {
       const item: Array = KEY_ARRAY[i];
       // キー入力チェック
-      if Input.is_action_just_pressed(item[0]):
-            # 移動
-            _move_block(item[1])
-            # 両端チェックと固定ブロックとの当たり判定
+      if (key.keyDown(iem[0]) {
+            // 移動
+            this.moveBlock(item[1]);
+            // 両端チェックと固定ブロックとの当たり判定
             if _hit_edge() or _hit_static():
                 # ブロックを戻す
                 _move_block(item[1] * -1)
