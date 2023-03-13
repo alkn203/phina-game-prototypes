@@ -133,9 +133,9 @@ phina.define('MainScene', {
             // 移動
             this.moveBlock(item[1]);
             // 両端チェックと固定ブロックとの当たり判定
-            if _hit_edge() or _hit_static():
-                # ブロックを戻す
-                _move_block(item[1] * -1)
+            if (this.hitEdge() || this.hitStatic() {
+                // ブロックを戻す
+                this.moveBlock(item[1] * -1)
 
   },
   /**
