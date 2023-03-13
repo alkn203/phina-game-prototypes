@@ -125,9 +125,10 @@ phina.define('MainScene', {
    */
   moveBlockX: function() {
     // 配列ループ
-    for item in KEY_ARRAY:
-        # キー入力チェック
-        if Input.is_action_just_pressed(item[0]):
+    for(let i =　0; i < KEY_ARRAY.length; i++) {
+      const item: Array = KEY_ARRAY[i];
+      // キー入力チェック
+      if Input.is_action_just_pressed(item[0]):
             # 移動
             _move_block(item[1])
             # 両端チェックと固定ブロックとの当たり判定
