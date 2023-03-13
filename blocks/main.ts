@@ -97,7 +97,7 @@ phina.define('MainScene', {
     // 中心ブロック
     var org: Block = this.dynamicGroup.children.first;
     org.x = this.gridX.center() + BLOCK_OFFSET;
-    org.y = 0;
+    org.y = BLOCK_OFFSET;
     // 配置情報データをもとにブロックを配置
     for (let i = 0; i < 4; i++) {
       const block: Block = this.dynamicGroup.children[i];
@@ -113,13 +113,13 @@ phina.define('MainScene', {
     // 1ブロック分落下
     this.moveBlock(Vector2.DOWN);
     // 画面下到達か固定ブロックにヒット
-    if (this.hitBottom() && this.hitStatic()) {
+    if (this.hitBottom() || this.hitStatic()) {
       // ブロックを戻す
       this.moveBlock(Vector2.UP);
       // 固定ブロックへ追加
       this.dynamicToStatic();
+      this.createBlock();
     }
-
   },
   /**
    * ブロック移動処理
@@ -129,7 +129,7 @@ phina.define('MainScene', {
     const len: number = children.length; 
 
     for (let i = 0; i < len; i++) {
-      const block: Block = this.dynamicGroup.children[i];
+      const block: Block = children[i];
       block.position.add(Vector2.mul(vec, BLOCK_SIZE));
       block.indexPos.add(vec);
     }
