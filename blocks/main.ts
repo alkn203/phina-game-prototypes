@@ -121,6 +121,20 @@ phina.define('MainScene', {
     }
   },
   /**
+   * ブロック横移動処理
+   */
+  moveBlockX: function() {
+    // 1ブロック分落下
+    this.moveBlock(Vector2.DOWN);
+    // 画面下到達か固定ブロックにヒット
+    if (this.hitBottom() && this.hitStatic()) {
+      // ブロックを戻す
+      this.moveBlock(Vector2.UP);
+      // 固定ブロックへ追加
+      this.dynamicToStatic();
+    }
+  },
+  /**
    * ブロック移動処理
    */
   moveBlock: function(vec: Vector2) {
