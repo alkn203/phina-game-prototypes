@@ -7,7 +7,7 @@ const BLOCK_SIZE = 40
 const BLOCK_OFFSET = BLOCK_SIZE / 2;
 const BLOCK_COLS = 10
 const BLOCK_ROWS = 20
-const BLOCK_NUMS = 4
+const BLOCK_NUM = 4
 const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
@@ -86,7 +86,7 @@ phina.define('MainScene', {
     // 種類をランダムに決める
     const type: number = Random.randint(0, BLOCK_TYPE - 1);
     // 落下ブロック作成
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < BLOCK_NUM; i++) {
       //@ts-ignore
       const block: Block = Block().addChildTo(this.dynamicGroup);
       // ブロックの種類
@@ -99,7 +99,7 @@ phina.define('MainScene', {
     org.x = this.gridX.center() + BLOCK_OFFSET;
     org.y = BLOCK_OFFSET;
     // 配置情報データをもとにブロックを配置
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < BLOCK_NUM; i++) {
       const block: Block = this.dynamicGroup.children[i];
       block.x = org.x + BLOCK_LAYOUT[type][i].x * BLOCK_SIZE;
       block.y = org.y + BLOCK_LAYOUT[type][i].y * BLOCK_SIZE;
@@ -120,6 +120,24 @@ phina.define('MainScene', {
       this.dynamicToStatic();
       this.createBlock();
     }
+  },
+  /**
+   * ブロック横移動処理
+   */
+  moveBlockX: function(app) {
+    const key = app.keyboard;
+    // 配列ループ
+    for(let i =　0; i < KEY_ARRAY.length; i++) {
+      const item: Array = KEY_ARRAY[i];
+      // キー入力チェック
+      if (key.keyDown(iem[0]) {
+            // 移動
+            this.moveBlock(item[1]);
+            // 両端チェックと固定ブロックとの当たり判定
+            if (this.hitEdge() || this.hitStatic() {
+                // ブロックを戻す
+                this.moveBlock(item[1] * -1)
+
   },
   /**
    * ブロック移動処理
@@ -153,16 +171,15 @@ phina.define('MainScene', {
   /**
    * 固定ブロックとの当たり判定
    */
-  hitStatic: function() {
+  hitStatic: function(): boolean {
     const children: Block[] = this.dynamicGroup.children;
     const len: number = children.length;
     const children2: Block[] = this.staticGroup.children;
     const len2: number = children2.length;
 
     for (let i = 0; i < len; i++) {
-      const block: Block = children[i];
-
       for (let j = 0; j < len2; j++) {
+        const block: Block = children[i];
         const target: Block = children2[j];
         // 位置が一致したら
         if (block.indexPos.equals(target.indexPos)) {
