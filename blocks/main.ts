@@ -124,15 +124,17 @@ phina.define('MainScene', {
    * ブロック横移動処理
    */
   moveBlockX: function() {
-    // 1ブロック分落下
-    this.moveBlock(Vector2.DOWN);
-    // 画面下到達か固定ブロックにヒット
-    if (this.hitBottom() && this.hitStatic()) {
-      // ブロックを戻す
-      this.moveBlock(Vector2.UP);
-      // 固定ブロックへ追加
-      this.dynamicToStatic();
-    }
+    // 配列ループ
+    for item in KEY_ARRAY:
+        # キー入力チェック
+        if Input.is_action_just_pressed(item[0]):
+            # 移動
+            _move_block(item[1])
+            # 両端チェックと固定ブロックとの当たり判定
+            if _hit_edge() or _hit_static():
+                # ブロックを戻す
+                _move_block(item[1] * -1)
+
   },
   /**
    * ブロック移動処理
