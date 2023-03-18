@@ -15,11 +15,13 @@ const ASSETS = {
     'pieces': 'assets/pieces.png',
   },
 };
-// 自作クラス補完用
+// 自作クラス保管用
 interface Piece extends Sprite {
-  num: number
-}
-// メインシーン
+  num: number;
+};
+/**
+ * メインシーン
+ */
 phina.define('MainScene', {
   superClass: 'DisplayScene',
   // コンストラクタ
@@ -43,7 +45,7 @@ phina.define('MainScene', {
    * シャッフルボタン作成
    */
   createButton: function() {
-    const button: Button = Button({
+    const button = Button({
       text: 'SHUFFLE'
     }).addChildTo(this);
     button.x = this.gridX.center();
@@ -64,12 +66,12 @@ phina.define('MainScene', {
 
     for (let i = 0; i < PIECE_NUM; i++) {
       // グリッド配置用のインデックス値算出
-      const sx: number = i % PIECE_NUM_X;
-      const sy: number = Math.floor(i / PIECE_NUM_X);
+      const sx = i % PIECE_NUM_X;
+      const sy = Math.floor(i / PIECE_NUM_X);
       // 番号
-      const num: number = i + 1;
+      const num = i + 1;
       // ピース作成
-      // @ts-ignore
+      //@ts-ignore
       const piece: Piece = Piece(num).addChildTo(this.pieceGroup);
       // Gridを利用して配置
       piece.x = grid.span(sx) + PIECE_OFFSET;
@@ -91,24 +93,24 @@ phina.define('MainScene', {
   /**
    * ピースの移動処理
    */
-  movePiece: function(piece: Piece, instantly: boolean = false) {
+  movePiece: function(piece: Piece, instantly = false) {
     // 空白ピース
     const blank: Piece = this.blank;
     // 即入れ替え
     if (instantly) {
-      const pos: Vector2 = Vector2(piece.x, piece.y);
+      const pos = Vector2(piece.x, piece.y);
       piece.setPosition(blank.x, blank.y);
       blank.setPosition(pos.x, pos.y);
       return;
     }
     // x, yの座標差の絶対値
-    const dx: number = Math.abs(piece.x - blank.x);
-    const dy: number = Math.abs(piece.y - blank.y);
+    const dx = Math.abs(piece.x - blank.x);
+    const dy = Math.abs(piece.y - blank.y);
     // 隣り合わせの判定
     if ((piece.x === blank.x && dy === PIECE_SIZE) ||
       (piece.y === blank.y && dx === PIECE_SIZE)) {
       // タッチされたピース位置を記憶
-      const pos: Vector2 = Vector2(piece.x, piece.y);
+      const pos = Vector2(piece.x, piece.y);
       // ピース移動処理
       piece.tweener.to({x:blank.x, y:blank.y}, 100)
                    .call(() => {
@@ -129,8 +131,8 @@ phina.define('MainScene', {
     for (let i = -1; i < 2; i++) {
       for (let j = -1; j < 2; j++) {
         if (Math.abs(i + j) === 1) {
-          const x: number = blank.x + i * PIECE_SIZE;
-          const y: number = blank.y + j * PIECE_SIZE;
+          const x = blank.x + i * PIECE_SIZE;
+          const y = blank.y + j * PIECE_SIZE;
           const target: Piece | null = this.getPiece(x, y);
           if (target) {
             arr.push(target);
@@ -145,12 +147,12 @@ phina.define('MainScene', {
   /**
   * 指定された座標のピースを返す
   */
-  getPiece: function(x: number, y: number): Piece | null {
+  getPiece: function(x, y) {
     const children: Piece[] = this.pieceGroup.children;
     const len: number = children.length;
     
     for (let i = 0; i < len; i++) {
-      const piece: Piece = children[i];
+      const piece = children[i];
       // 座標が一致
       if (piece.x === x && piece.y === y) {
         return piece;

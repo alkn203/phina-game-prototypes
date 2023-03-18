@@ -6,7 +6,7 @@ var BLOCK_SIZE = 40;
 var BLOCK_OFFSET = BLOCK_SIZE / 2;
 var BLOCK_COLS = 10;
 var BLOCK_ROWS = 20;
-var BLOCK_NUMS = 4;
+var BLOCK_NUM = 4;
 var BLOCK_TYPE = 7;
 var BOTTOM_Y = 20;
 var EDGE_LEFT = 2;
@@ -34,6 +34,7 @@ var KEY_ARRAY = [
     ["left", Vector2.LEFT],
     ["right", Vector2.RIGHT]
 ];
+;
 /**
  * メインシーン
  */
@@ -79,28 +80,28 @@ phina.define('MainScene', {
      * ブロック作成関数
      */
     createBlock: function () {
+        var _this = this;
         // 種類をランダムに決める
         var type = Random.randint(0, BLOCK_TYPE - 1);
         // 落下ブロック作成
-        for (var i = 0; i < 4; i++) {
+        BLOCK_NUM.times(function () {
             //@ts-ignore
-            var block = Block().addChildTo(this.dynamicGroup);
+            var block = Block().addChildTo(_this.dynamicGroup);
             // ブロックの種類
             block.type = type;
             // フレームインデックス設定
             block.frameIndex = type;
-        }
+        });
         // 中心ブロック
         var org = this.dynamicGroup.children.first;
         org.x = this.gridX.center() + BLOCK_OFFSET;
         org.y = BLOCK_OFFSET;
         // 配置情報データをもとにブロックを配置
-        for (var i = 0; i < 4; i++) {
-            var block = this.dynamicGroup.children[i];
+        this.dynamicGroup.children.each(function (block, i) {
             block.x = org.x + BLOCK_LAYOUT[type][i].x * BLOCK_SIZE;
             block.y = org.y + BLOCK_LAYOUT[type][i].y * BLOCK_SIZE;
-            block.indexPos = this.coordToIndex(block.position);
-        }
+            block.indexPos = _this.coordToIndex(block.position);
+        });
     },
     /**
      * ブロック落下処理
@@ -121,13 +122,10 @@ phina.define('MainScene', {
      * ブロック移動処理
      */
     moveBlock: function (vec) {
-        var children = this.dynamicGroup.children;
-        var len = children.length;
-        for (var i = 0; i < len; i++) {
-            var block = children[i];
+        this.dynamicGroup.children.each(function (block) {
             block.position.add(Vector2.mul(vec, BLOCK_SIZE));
             block.indexPos.add(vec);
-        }
+        });
     },
     /**
      * 画面下到達チェック
@@ -152,8 +150,8 @@ phina.define('MainScene', {
         var children2 = this.staticGroup.children;
         var len2 = children2.length;
         for (var i = 0; i < len; i++) {
-            var block = children[i];
             for (var j = 0; j < len2; j++) {
+                var block = children[i];
                 var target = children2[j];
                 // 位置が一致したら
                 if (block.indexPos.equals(target.indexPos)) {

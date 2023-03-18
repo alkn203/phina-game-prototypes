@@ -1,5 +1,5 @@
 // 型定義ファイルを参照
-/// <reference path="node_modules/phina.js.d.ts/globalized/index.d.ts" />
+/// <reference path="../node_modules/phina.js.d.ts/globalized/index.d.ts" />
 phina.globalize();
 // 定数
 var SCREEN_WIDTH = 640;
@@ -14,7 +14,10 @@ var ASSETS = {
         'pieces': 'assets/pieces.png'
     }
 };
-// メインシーン
+;
+/**
+ * メインシーン
+ */
 phina.define('MainScene', {
     superClass: 'DisplayScene',
     // コンストラクタ
@@ -65,7 +68,7 @@ phina.define('MainScene', {
             // 番号
             var num = i + 1;
             // ピース作成
-            // @ts-ignore
+            //@ts-ignore
             var piece = Piece(num).addChildTo(this_1.pieceGroup);
             // Gridを利用して配置
             piece.x = grid.span(sx) + PIECE_OFFSET;
