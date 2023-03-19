@@ -156,6 +156,35 @@ phina.define('MainScene', {
     }); 
   },
   /**
+   * ブロック回転処理
+   */
+  rotateBlock: function(app) {
+    const key = app.keyboard;
+      // 上キー
+      if (key.getKeyDown('up')) {
+        // 移動
+        const children: Block[] = this.dynamicGroup.children;
+        // 度からラジアンへ変換
+        const rad = Math.degToRad(90);
+        // 回転の原点
+        const point: children.first;
+        // 原点を中心に回転後の座標を求める
+        children.each((block) => {
+          block.position.rotate(rad, point);
+          block.indexPos = this.coordToIndex(block.position);
+        });
+        // 両端と固定ブロックと底との当たり判定
+        if (this.hitEdge() || this.hitStatic() || this.hitBottom()) {
+            //  回転を戻す
+            children.each((block) => {
+            block.position.rotate(-1 * rad, point);
+            block.indexPos = this.coordToIndex(block.position);
+        });
+for block in dynamic:
+                block.position = point + (block.position - point).rotated(-1 * angle)
+                block.index_po
+
+  /**
    * 削除可能ラインチェック
    */
   checkRemoveline: function() {
