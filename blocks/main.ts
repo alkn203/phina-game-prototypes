@@ -12,7 +12,7 @@ const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
 const EDGE_RIGHT = 13
-const INTERVAL = 1000;
+const INTERVAL = 100;
 // アセット
 const ASSETS = {
   // 画像
@@ -190,12 +190,9 @@ phina.define('MainScene', {
    */
   dynamicToStatic: function() {
     // グループ間の移動
-    const children: Block[] = this.dynamicGroup.children;
-    const len: number = children.length;
-
-    for (let i = 0; i < len; i++) {
-      children.pop().addChildTo(this.staticGroup);
-    }
+    this.dynamicGroup.children.each((block) => {
+      block.addChildTo(this.staticGroup);
+    });
   },
   /**
    * 座標値からインデックス値へ変換
