@@ -64,7 +64,7 @@ phina.define('MainScene', {
     this.prevTime = 0;
     this.curTime = 0;
     this.interval = INTERVAL;
-    this.removeLine = [];
+    this.removeline = [];
     // ブロック作成
     this.createBlock();
   },
@@ -142,7 +142,8 @@ phina.define('MainScene', {
       this.moveBlock(Vector2.UP);
       // 固定ブロックへ追加
       this.dynamicToStatic();
-      this.createBlock();
+      // 削除行チェック
+      this.checkrRemoveline();
     }
   },
   /**
@@ -153,6 +154,34 @@ phina.define('MainScene', {
       block.position.add(Vector2.mul(vec, BLOCK_SIZE));
       block.indexPos.add(vec);
     }); 
+  },
+  /**
+   * 削除可能ラインチェック
+   */
+  checkRemoveline: function() {
+    // 上から走査
+    BLOCK_ROWS.times((i: number) => {
+      let count = 0;
+      // 固定ブロックに対して
+      this.staticGroup.children.each((block: Block) => {
+        // 走査ライン上にあればカウント
+        if (block.indexPos.y === i) {
+          count++;
+        }
+        // 10個あれば削除対象ラインとして登録
+        if (count === BLOCK_COLS) {
+          this.removeline.push(i);
+        }
+      });
+      // 削除対象ラインがあれば
+      if (this.removeline.length > 0) {
+        this.removeBlock();
+
+      }
+      else {
+        this.createBlock();
+      }
+    });
   },
   /**
    * 画面下到達チェック
