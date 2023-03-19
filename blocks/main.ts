@@ -165,6 +165,14 @@ phina.define('MainScene', {
     return false
   },
   /**
+   * 両端チェック
+   */
+  func _hit_edge() -> bool:
+    for block in dynamic_layer.get_children():
+        if (block.index_pos.x == EDGE_LEFT) or (block.index_pos.x == EDGE_RIGHT):
+            return true
+    return false
+  /**
    * 固定ブロックとの当たり判定
    */
   hitStatic: function(): boolean {
