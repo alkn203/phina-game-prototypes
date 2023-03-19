@@ -11,7 +11,7 @@ var BLOCK_TYPE = 7;
 var BOTTOM_Y = 20;
 var EDGE_LEFT = 2;
 var EDGE_RIGHT = 13;
-var INTERVAL = 1000;
+var INTERVAL = 200;
 // アセット
 var ASSETS = {
     // 画像
@@ -70,10 +70,14 @@ phina.define('MainScene', {
      */
     update: function (app) {
         this.curTime += app.deltaTime;
-        // 一定時間毎にブロック落下
-        if (this.curTime - this.prevTime > this.interval) {
-            this.moveBlockY();
-            this.prevTime = this.curTime;
+        if (this.dynamicGroup.children.length > 0) {
+            // 一定時間毎にブロック落下
+            if (this.curTime - this.prevTime > this.interval) {
+                this.moveBlockY();
+                this.prevTime = this.curTime;
+            }
+            // ブロック横移動
+            this.moveBlockX(app);
         }
     },
     /**
@@ -101,6 +105,27 @@ phina.define('MainScene', {
             block.x = org.x + BLOCK_LAYOUT[type][i].x * BLOCK_SIZE;
             block.y = org.y + BLOCK_LAYOUT[type][i].y * BLOCK_SIZE;
             block.indexPos = _this.coordToIndex(block.position);
+        });
+    },
+    /**
+     * ブロック左右移動
+     */
+    moveBlockX: function (app) {
+        var _this = this;
+        var key = app.keyboard;
+        // 配列ループ
+        KEY_ARRAY.each(function (item) {
+            // キー入力チェック
+            if (key.getKeyDown(item[0])) {
+                // 移動
+                _this.moveBlock(item[1]);
+                // 両端チェックと固定ブロックとの当たり判定
+                if (_this.hitEdge() || _this.hitStatic()) {
+                    //  ブロックを戻す
+                    //@ts-ignore
+                    _this.moveBlock(Vector2.mul(item[1], -1));
+                }
+            }
         });
     },
     /**
@@ -142,6 +167,20 @@ phina.define('MainScene', {
         return false;
     },
     /**
+     * 両端チェック
+     */
+    hitEdge: function () {
+        var children = this.dynamicGroup.children;
+        var len = children.length;
+        for (var i = 0; i < len; i++) {
+            var block = children[i];
+            if (block.indexPos.x === EDGE_LEFT || block.indexPos.x === EDGE_RIGHT) {
+                return true;
+            }
+        }
+        return false;
+    },
+    /**
      * 固定ブロックとの当たり判定
      */
     hitStatic: function () {
@@ -165,12 +204,11 @@ phina.define('MainScene', {
      * 移動ブロックから固定ブロックへの変更処理
      */
     dynamicToStatic: function () {
+        var _this = this;
         // グループ間の移動
-        var children = this.dynamicGroup.children;
-        var len = children.length;
-        for (var i = 0; i < len; i++) {
-            children.pop().addChildTo(this.staticGroup);
-        }
+        BLOCK_NUM.times(function () {
+            _this.dynamicGroup.children.pop().addChildTo(_this.staticGroup);
+        });
     },
     /**
      * 座標値からインデックス値へ変換

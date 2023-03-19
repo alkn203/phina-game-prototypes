@@ -12,7 +12,7 @@ const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
 const EDGE_RIGHT = 13
-const INTERVAL = 100;
+const INTERVAL = 200;
 // アセット
 const ASSETS = {
   // 画像
@@ -71,12 +71,17 @@ phina.define('MainScene', {
   /**
    * 毎フレーム処理
    */
-  update: function(app: Ticker) {
+  update: function(app) {
     this.curTime += app.deltaTime;
-    // 一定時間毎にブロック落下
-    if (this.curTime - this.prevTime > this.interval) {
-      this.moveBlockY();
-      this.prevTime = this.curTime;
+
+    if (this.dynamicGroup.children.length > 0) {
+      // 一定時間毎にブロック落下
+      if (this.curTime - this.prevTime > this.interval) {
+        this.moveBlockY();
+        this.prevTime = this.curTime;
+      }
+      // ブロック横移動
+      this.moveBlockX(app);
     }
   },
   /**
@@ -109,16 +114,17 @@ phina.define('MainScene', {
    * ブロック左右移動
    */
   moveBlockX: function(app) {
-    key = app.keyboard;
+    const key = app.keyboard;
     // 配列ループ
     KEY_ARRAY.each((item) => {
       // キー入力チェック
-      if (key.getKeyDown(item[0]) {
+      if (key.getKeyDown(item[0])) {
         // 移動
-        this.movezBlock(item[1]);
+        this.moveBlock(item[1]);
         // 両端チェックと固定ブロックとの当たり判定
-        if(this.hitEdge() or thid.hitStatic()) {
+        if (this.hitEdge() || this.hitStatic()) {
           //  ブロックを戻す
+          //@ts-ignore
           this.moveBlock(Vector2.mul(item[1], -1));
         }
       }
@@ -167,11 +173,18 @@ phina.define('MainScene', {
   /**
    * 両端チェック
    */
-  func _hit_edge() -> bool:
-    for block in dynamic_layer.get_children():
-        if (block.index_pos.x == EDGE_LEFT) or (block.index_pos.x == EDGE_RIGHT):
-            return true
+  hitEdge: function() {
+    const children: Block[] = this.dynamicGroup.children;
+    const len = children.length;
+
+    for (let i = 0; i < len; i++) {
+      const block: Block = children[i];
+      if (block.indexPos.x === EDGE_LEFT || block.indexPos.x === EDGE_RIGHT) { 
+        return true
+      }
+    }
     return false
+  },
   /**
    * 固定ブロックとの当たり判定
    */
@@ -198,8 +211,8 @@ phina.define('MainScene', {
    */
   dynamicToStatic: function() {
     // グループ間の移動
-    this.dynamicGroup.children.each((block) => {
-      block.addChildTo(this.staticGroup);
+    BLOCK_NUM.times(() => {
+      this.dynamicGroup.children.pop().addChildTo(this.staticGroup);
     });
   },
   /**
