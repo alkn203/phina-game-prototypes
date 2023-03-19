@@ -106,6 +106,25 @@ phina.define('MainScene', {
     });
   },
   /**
+   * ブロック左右移動
+   */
+  moveBlockX: function(app) {
+    key = app.keyboard;
+    // 配列ループ
+    KEY_ARRAY.each((item) => {
+      // キー入力チェック
+      if (key.getKeyDown(item[0]) {
+        // 移動
+        this.movezBlock(item[1]);
+        // 両端チェックと固定ブロックとの当たり判定
+        if(this.hitEdge() or thid.hitStatic()) {
+          //  ブロックを戻す
+          this.moveBlock(Vector2.mul(item[1], -1));
+        }
+      }
+    });
+  },
+  /**
    * ブロック落下処理
    */
   moveBlockY: function() {
