@@ -180,10 +180,8 @@ phina.define('MainScene', {
             block.position.rotate(-1 * rad, point);
             block.indexPos = this.coordToIndex(block.position);
         });
-for block in dynamic:
-                block.position = point + (block.position - point).rotated(-1 * angle)
-                block.index_po
-
+      }
+  },
   /**
    * 削除可能ラインチェック
    */
@@ -205,7 +203,6 @@ for block in dynamic:
       // 削除対象ラインがあれば
       if (this.removeline.length > 0) {
         this.removeBlock();
-
       }
       else {
         this.createBlock();
