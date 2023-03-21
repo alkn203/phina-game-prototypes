@@ -61,7 +61,7 @@ phina.define('MainScene', {
         this.prevTime = 0;
         this.curTime = 0;
         this.interval = INTERVAL;
-        this.removeLine = [];
+        this.removeline = [];
         // ブロック作成
         this.createBlock();
     },
@@ -78,6 +78,8 @@ phina.define('MainScene', {
             }
             // ブロック横移動
             this.moveBlockX(app);
+            // ブロック回転
+            this.rotateBlock(app);
         }
     },
     /**
@@ -140,7 +142,8 @@ phina.define('MainScene', {
             this.moveBlock(Vector2.UP);
             // 固定ブロックへ追加
             this.dynamicToStatic();
-            this.createBlock();
+            // 削除行チェック
+            this.checkRemoveline();
         }
     },
     /**
@@ -151,6 +154,107 @@ phina.define('MainScene', {
             block.position.add(Vector2.mul(vec, BLOCK_SIZE));
             block.indexPos.add(vec);
         });
+    },
+    /**
+     * ブロック回転処理
+     */
+    rotateBlock: function (app) {
+        var _this = this;
+        var key = app.keyboard;
+        // 上キー
+        if (key.getKeyDown('up')) {
+            // 移動
+            var children = this.dynamicGroup.children;
+            // 度からラジアンへ変換
+            var rad_1 = Math.degToRad(90);
+            // 回転の原点
+            var point_1 = children.first.position;
+            // 原点を中心に回転後の座標を求める
+            children.each(function (block) {
+                block.position.rotate(rad_1, point_1);
+                block.indexPos = _this.coordToIndex(block.position);
+            });
+            // 両端と固定ブロックと底との当たり判定
+            if (this.hitEdge() || this.hitStatic() || this.hitBottom()) {
+                //  回転を戻す
+                children.each(function (block) {
+                    block.position.rotate(-1 * rad_1, point_1);
+                    block.indexPos = _this.coordToIndex(block.position);
+                });
+            }
+        }
+    },
+    /**
+     * 削除可能ラインチェック
+     */
+    checkRemoveline: function () {
+        var _this = this;
+        // 上から走査
+        BLOCK_ROWS.times(function (i) {
+            var count = 0;
+            // 固定ブロックに対して
+            _this.staticGroup.children.some(function (block) {
+                // 走査ライン上にあればカウント
+                if (block.indexPos.y === i) {
+                    count++;
+                }
+                // 10個あれば削除対象ラインとして登録
+                if (count === BLOCK_COLS) {
+                    _this.removeline.push(i);
+                    return true;
+                }
+            });
+        });
+        // 削除対象ラインがあれば
+        if (this.removeline.length > 0) {
+            this.removeBlock();
+        }
+        else {
+            this.createBlock();
+        }
+    },
+    /**
+     * ブロック削除処理
+     */
+    removeBlock: function () {
+        var sta = this.staticGroup.children;
+        // 削除対象ラインに対して
+        this.removeline.each(function (line) {
+            sta.each(function (block) {
+                if (block.indexPos.y === line) {
+                    // 削除フラグ
+                    block.removable = true;
+                }
+                // 削除ラインより上のブロックに落下回数カウント
+                if (block.indexPos.y < line) {
+                    block.dropCount++;
+                }
+            });
+        });
+        // ブロック削除
+        sta.eraseIfAll(function (block) {
+            if (block.removable) {
+                return true;
+            }
+        });
+        this.removeline.clear();
+        // 固定ブロック落下
+        this.dropBlock();
+    },
+    /**
+     * 固定ブロック落下処理
+     */
+    dropBlock: function () {
+        var _this = this;
+        this.staticGroup.children.each(function (block) {
+            if (block.dropCount > 0) {
+                block.y += block.dropCount * BLOCK_SIZE;
+                block.indexPos = _this.coordToIndex(block.position);
+                block.dropCount = 0;
+            }
+        });
+        //落下ブロック作成
+        this.createBlock();
     },
     /**
      * 画面下到達チェック
@@ -233,6 +337,10 @@ phina.define('Block', {
         this.indexPos = Vector2.ZERO;
         // ブロックの種類
         this.type = 0;
+        // 削除フラク
+        this.removable = false;
+        // 落下回数
+        this.dropCount = 0;
     }
 });
 /**

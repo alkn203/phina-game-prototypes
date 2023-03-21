@@ -37,6 +37,8 @@ const KEY_ARRAY = [
 interface Block extends Sprite {
   indexPos: Vector2;
   type: number;
+  removable: boolean;
+  dropCount: number;
 };
 /**
  * メインシーン
@@ -82,6 +84,8 @@ phina.define('MainScene', {
       }
       // ブロック横移動
       this.moveBlockX(app);
+      // ブロック回転
+      this.rotateBlock(app);
     }
   },
   /**
@@ -143,7 +147,7 @@ phina.define('MainScene', {
       // 固定ブロックへ追加
       this.dynamicToStatic();
       // 削除行チェック
-      this.checkrRemoveline();
+      this.checkRemoveline();
     }
   },
   /**
@@ -160,27 +164,28 @@ phina.define('MainScene', {
    */
   rotateBlock: function(app) {
     const key = app.keyboard;
-      // 上キー
-      if (key.getKeyDown('up')) {
-        // 移動
-        const children: Block[] = this.dynamicGroup.children;
-        // 度からラジアンへ変換
-        const rad = Math.degToRad(90);
-        // 回転の原点
-        const point: children.first;
-        // 原点を中心に回転後の座標を求める
+    // 上キー
+    if (key.getKeyDown('up')) {
+      // 移動
+      const children: Block[] = this.dynamicGroup.children;
+      // 度からラジアンへ変換
+      const rad = Math.degToRad(90);
+      // 回転の原点
+      const point = children.first.position;
+      // 原点を中心に回転後の座標を求める
+      children.each((block) => {
+        block.position.rotate(rad, point);
+        block.indexPos = this.coordToIndex(block.position);
+      });
+      // 両端と固定ブロックと底との当たり判定
+      if (this.hitEdge() || this.hitStatic() || this.hitBottom()) {
+        //  回転を戻す
         children.each((block) => {
-          block.position.rotate(rad, point);
+          block.position.rotate(-1 * rad, point);
           block.indexPos = this.coordToIndex(block.position);
         });
-        // 両端と固定ブロックと底との当たり判定
-        if (this.hitEdge() || this.hitStatic() || this.hitBottom()) {
-            //  回転を戻す
-            children.each((block) => {
-            block.position.rotate(-1 * rad, point);
-            block.indexPos = this.coordToIndex(block.position);
-        });
       }
+    }
   },
   /**
    * 削除可能ラインチェック
@@ -190,7 +195,7 @@ phina.define('MainScene', {
     BLOCK_ROWS.times((i: number) => {
       let count = 0;
       // 固定ブロックに対して
-      this.staticGroup.children.each((block: Block) => {
+      this.staticGroup.children.some((block: Block) => {
         // 走査ライン上にあればカウント
         if (block.indexPos.y === i) {
           count++;
@@ -198,16 +203,60 @@ phina.define('MainScene', {
         // 10個あれば削除対象ラインとして登録
         if (count === BLOCK_COLS) {
           this.removeline.push(i);
+          return true;
         }
       });
-      // 削除対象ラインがあれば
-      if (this.removeline.length > 0) {
-        this.removeBlock();
-      }
-      else {
-        this.createBlock();
+    });
+    // 削除対象ラインがあれば
+    if (this.removeline.length > 0) {
+      this.removeBlock();
+    }
+    else {
+      this.createBlock();
+    }
+  },
+  /**
+   * ブロック削除処理
+   */
+  removeBlock: function() {
+    const sta: Block[] = this.staticGroup.children;
+    // 削除対象ラインに対して
+    this.removeline.each((line: number) => {
+      sta.each((block) => {
+        if (block.indexPos.y === line) {
+          // 削除フラグ
+          block.removable = true;
+        }
+        // 削除ラインより上のブロックに落下回数カウント
+        if (block.indexPos.y < line) {
+          block.dropCount++;
+        }
+      });
+    });
+    // ブロック削除
+    sta.eraseIfAll((block) => {
+      if (block.removable) {
+        return true;
       }
     });
+
+    this.removeline.clear();
+    // 固定ブロック落下
+    this.dropBlock();
+  },
+  /**
+   * 固定ブロック落下処理
+   */
+  dropBlock: function() {
+    this.staticGroup.children.each((block: Block) => {
+      if (block.dropCount > 0) {
+        block.y += block.dropCount * BLOCK_SIZE;
+        block.indexPos = this.coordToIndex(block.position);
+        block.dropCount = 0
+      }
+    });
+    //落下ブロック作成
+    this.createBlock();
   },
   /**
    * 画面下到達チェック
@@ -293,6 +342,10 @@ phina.define('Block', {
     this.indexPos = Vector2.ZERO;
     // ブロックの種類
     this.type = 0;
+    // 削除フラク
+    this.removable = false
+    // 落下回数
+    this.dropCount = 0;
   },
 });
 /**
