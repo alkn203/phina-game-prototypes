@@ -259,6 +259,22 @@ phina.define('MainScene', {
     this.createBlock();
   },
   /**
+   * 画面上到達チェック
+   */
+  hitTop: function(): boolean {
+    const children: Block[] = this.dynamicGroup.children;
+    const len: number = children.length;
+
+    for (let i = 0; i < len; i++) {
+      const block: Block = children[i];
+      
+      if (block.indexPos.y === 0) {
+        return true
+      }
+    }
+    return false
+  },
+  /**
    * 画面下到達チェック
    */
   hitBottom: function(): boolean {
