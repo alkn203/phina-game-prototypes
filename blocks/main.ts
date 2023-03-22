@@ -266,7 +266,17 @@ phina.define('MainScene', {
 
     this.removeline.clear();
     // 消去アニメーション
-    
+    this.dummyGroup.children.each((dummy) => {
+      const flow = Flow((resolve) => {
+        dummy.tweener
+             .to({scaleY: 0.2}, 200)
+             .call(() => {
+               dummy.remove();
+               resolve('removed');
+             }).play();
+      });
+      flows.push(flow);
+    });
     // 一定時間待って固定ブロック落下
     this.tweener.wait(1000)
                 .call(() => {
