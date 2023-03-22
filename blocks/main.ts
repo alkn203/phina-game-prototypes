@@ -62,6 +62,7 @@ phina.define('MainScene', {
     // グループ 
     this.dynamicGroup = DisplayElement().addChildTo(this);
     this.staticGroup = DisplayElement().addChildTo(this);
+    this.dummyGroup = DisplayElement().addChildTo(this);
     // 変数
     this.prevTime = 0;
     this.curTime = 0;
@@ -86,6 +87,12 @@ phina.define('MainScene', {
       this.moveBlockX(app);
       // ブロック回転
       this.rotateBlock(app);
+      // ブロック落下速度変更
+      this.moveBlockYFaster(app);    
+    }
+    // 画面上到達
+    if (this.hitTop()) {
+      this.exit('title');
     }
   },
   /**
@@ -148,6 +155,19 @@ phina.define('MainScene', {
       this.dynamicToStatic();
       // 削除行チェック
       this.checkRemoveline();
+    }
+  },
+  /**
+   * ブロック落下スピード変更
+   */
+  moveBlockYFaster: function(app) {
+    const key = app.keyboard;
+    // キー入力チェック
+    if (key.getKey('down')) {
+      this.intnterval = INTERVAL / 2;
+    }
+    if (key.getKeyUp('down') {
+      this.interval = INTERVAL;
     }
   },
   /**
@@ -226,6 +246,10 @@ phina.define('MainScene', {
         if (block.indexPos.y === line) {
           // 削除フラグ
           block.removable = true;
+          // 消去アニメーション用ダミー作成
+          const dummy = Block().addChildTo(this.dummyGroup);
+          dummy.position = block.position;
+          dummy.frameIndex = block.frameIndex;
         }
         // 削除ラインより上のブロックに落下回数カウント
         if (block.indexPos.y < line) {
@@ -241,8 +265,22 @@ phina.define('MainScene', {
     });
 
     this.removeline.clear();
-    // 固定ブロック落下
-    this.dropBlock();
+    // 消去アニメーション
+    this.dummyGroup.children.each((dummy) => {
+      const flow = Flow((resolve) => {
+        dummy.tweener
+             .to({scaleY: 0.2}, 200)
+             .call(() => {
+               dummy.remove();
+               resolve('removed');
+             }).play();
+      });
+      flows.push(flow);
+    });
+    // アニメーション後落下処理へ
+    Flow.all(flows).then((message) => {
+      this.dropBlock();
+    });
   },
   /**
    * 固定ブロック落下処理
@@ -252,11 +290,27 @@ phina.define('MainScene', {
       if (block.dropCount > 0) {
         block.y += block.dropCount * BLOCK_SIZE;
         block.indexPos = this.coordToIndex(block.position);
-        block.dropCount = 0
+        block.dropCount = 0;
       }
     });
     //落下ブロック作成
     this.createBlock();
+  },
+  /**
+   * 画面上到達チェック
+   */
+  hitTop: function(): boolean {
+    const children: Block[] = this.dynamicGroup.children;
+    const len: number = children.length;
+
+    for (let i = 0; i < len; i++) {
+      const block: Block = children[i];
+      
+      if (block.indexPos.y === 0) {
+        return true;
+      }
+    }
+    return false;
   },
   /**
    * 画面下到達チェック
@@ -269,10 +323,10 @@ phina.define('MainScene', {
       const block: Block = children[i];
       
       if (block.indexPos.y === BOTTOM_Y) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   },
   /**
    * 両端チェック
@@ -284,10 +338,10 @@ phina.define('MainScene', {
     for (let i = 0; i < len; i++) {
       const block: Block = children[i];
       if (block.indexPos.x === EDGE_LEFT || block.indexPos.x === EDGE_RIGHT) { 
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   },
   /**
    * 固定ブロックとの当たり判定
