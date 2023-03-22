@@ -62,6 +62,7 @@ phina.define('MainScene', {
     // グループ 
     this.dynamicGroup = DisplayElement().addChildTo(this);
     this.staticGroup = DisplayElement().addChildTo(this);
+    this.dummyGroup = DisplayElement().addChildTo(this);
     // 変数
     this.prevTime = 0;
     this.curTime = 0;
@@ -245,6 +246,10 @@ phina.define('MainScene', {
         if (block.indexPos.y === line) {
           // 削除フラグ
           block.removable = true;
+          // 消去アニメーション用ダミー作成
+          const dummy = Block().addChildTo(this.dummyGroup);
+          dummy.position = block.position;
+          dummy.frameIndex = block.frameIndex;
         }
         // 削除ラインより上のブロックに落下回数カウント
         if (block.indexPos.y < line) {
@@ -260,6 +265,8 @@ phina.define('MainScene', {
     });
 
     this.removeline.clear();
+    // 消去アニメーション
+    
     // 一定時間待って固定ブロック落下
     this.tweener.wait(1000)
                 .call(() => {
