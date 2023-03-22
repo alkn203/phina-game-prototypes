@@ -277,11 +277,10 @@ phina.define('MainScene', {
       });
       flows.push(flow);
     });
-    // 一定時間待って固定ブロック落下
-    this.tweener.wait(1000)
-                .call(() => {
-                  this.dropBlock();
-                }.play();
+    // アニメーション後落下処理へ
+    Flow.all(flows).then((message) => {
+      this.dropBlock();
+    });
   },
   /**
    * 固定ブロック落下処理
