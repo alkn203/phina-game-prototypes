@@ -86,6 +86,8 @@ phina.define('MainScene', {
       this.moveBlockX(app);
       // ブロック回転
       this.rotateBlock(app);
+      // ブロック落下速度変更
+      this.moveBlockYFaster(app);    
     }
     // 画面上到達
     if (this.hitTop()) {
@@ -152,6 +154,19 @@ phina.define('MainScene', {
       this.dynamicToStatic();
       // 削除行チェック
       this.checkRemoveline();
+    }
+  },
+  /**
+   * ブロック落下スピード変更
+   */
+  moveBlockYFaster: function(app) {
+    const key = app.keyboard;
+    // キー入力チェック
+    if (key.getKey('down')) {
+      this.intnterval = INTERVAL / 2;
+    }
+    if (key.getKeyUp('down') {
+      this.interval = INTERVAL;
     }
   },
   /**
