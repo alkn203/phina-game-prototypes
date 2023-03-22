@@ -348,7 +348,8 @@ phina.define('Block', {
  */
 phina.main(function () {
     var app = GameApp({
-        startLabel: 'main',
+        //@ts-ignore
+        title: 'blocks',
         // アセット読み込み
         assets: ASSETS
     });
