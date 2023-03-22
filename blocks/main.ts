@@ -87,6 +87,10 @@ phina.define('MainScene', {
       // ブロック回転
       this.rotateBlock(app);
     }
+    // 画面上到達
+    if (this.hitTop()) {
+      this.exit('title');
+    }
   },
   /**
    * ブロック作成関数
