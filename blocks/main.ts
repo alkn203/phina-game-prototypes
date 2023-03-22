@@ -245,8 +245,11 @@ phina.define('MainScene', {
     });
 
     this.removeline.clear();
-    // 固定ブロック落下
-    this.dropBlock();
+    // 一定時間待って固定ブロック落下
+    this.tweener.wait(1000)
+                .call(() => {
+                  this.dropBlock();
+                }.play();
   },
   /**
    * 固定ブロック落下処理
@@ -256,7 +259,7 @@ phina.define('MainScene', {
       if (block.dropCount > 0) {
         block.y += block.dropCount * BLOCK_SIZE;
         block.indexPos = this.coordToIndex(block.position);
-        block.dropCount = 0
+        block.dropCount = 0;
       }
     });
     //落下ブロック作成
@@ -273,10 +276,10 @@ phina.define('MainScene', {
       const block: Block = children[i];
       
       if (block.indexPos.y === 0) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   },
   /**
    * 画面下到達チェック
@@ -289,10 +292,10 @@ phina.define('MainScene', {
       const block: Block = children[i];
       
       if (block.indexPos.y === BOTTOM_Y) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   },
   /**
    * 両端チェック
@@ -304,10 +307,10 @@ phina.define('MainScene', {
     for (let i = 0; i < len; i++) {
       const block: Block = children[i];
       if (block.indexPos.x === EDGE_LEFT || block.indexPos.x === EDGE_RIGHT) { 
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   },
   /**
    * 固定ブロックとの当たり判定
