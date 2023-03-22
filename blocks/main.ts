@@ -12,7 +12,7 @@ const BLOCK_TYPE = 7
 const BOTTOM_Y = 20
 const EDGE_LEFT = 2
 const EDGE_RIGHT = 13
-const INTERVAL = 200;
+const INTERVAL = 400;
 // アセット
 const ASSETS = {
   // 画像
@@ -164,9 +164,9 @@ phina.define('MainScene', {
     const key = app.keyboard;
     // キー入力チェック
     if (key.getKey('down')) {
-      this.intnterval = INTERVAL / 2;
+      this.interval = INTERVAL / 4;
     }
-    if (key.getKeyUp('down') {
+    if (key.getKeyUp('down')) {
       this.interval = INTERVAL;
     }
   },
@@ -247,6 +247,7 @@ phina.define('MainScene', {
           // 削除フラグ
           block.removable = true;
           // 消去アニメーション用ダミー作成
+          //@ts-ignore
           const dummy = Block().addChildTo(this.dummyGroup);
           dummy.position = block.position;
           dummy.frameIndex = block.frameIndex;
@@ -265,11 +266,13 @@ phina.define('MainScene', {
     });
 
     this.removeline.clear();
+    
+    const flows = [];
     // 消去アニメーション
-    this.dummyGroup.children.each((dummy) => {
+    this.dummyGroup.children.each((dummy: Block) => {
       const flow = Flow((resolve) => {
         dummy.tweener
-             .to({scaleY: 0.2}, 200)
+             .to({scaleY: 0.1}, 200)
              .call(() => {
                dummy.remove();
                resolve('removed');
@@ -300,7 +303,7 @@ phina.define('MainScene', {
    * 画面上到達チェック
    */
   hitTop: function(): boolean {
-    const children: Block[] = this.dynamicGroup.children;
+    const children: Block[] = this.staticGroup.children;
     const len: number = children.length;
 
     for (let i = 0; i < len; i++) {
