@@ -49,7 +49,7 @@ phina.define('MainScene', {
         // 背景色
         this.backgroundColor = 'skyblue';
         // グループ
-        var blockGroup = DisplayElement().addChildTo(this);
+        var floorGroup = DisplayElement().addChildTo(this);
         // グリッド
         var gx = this.gridX;
         var gy = this.gridY;
@@ -59,11 +59,11 @@ phina.define('MainScene', {
         player.setPosition(gx.center(), gy.span(13.5));
         player.state = 'FALLING';
         //@ts-ignore
-        var floor = Floor(3).addChildTo(this);
-        floor.setPosition(320, 600);
+        var floor = Floor(3).addChildTo(floorGroup);
+        floor.setPosition(320, 960);
         // クラス全体で参照できるようにする
         this.player = player;
-        this.blockGroup = blockGroup;
+        this.floorGroup = floorGroup;
     },
     // 毎フレーム更新処理
     update: function (app) {
@@ -109,13 +109,13 @@ phina.define('MainScene', {
         var rect = Rect(player.left, player.top + vy, player.width, player.height);
         var result = false;
         // ブロックグループをループ
-        this.blockGroup.children.some(function (block) {
+        this.floorGroup.children.some(function (floor) {
             // ブロックとのあたり判定
-            if (Collision.testRectRect(rect, block)) {
+            if (Collision.testRectRect(rect, floor)) {
                 // 移動量
                 player.vy = 0;
                 // 位置調整
-                player.bottom = block.top;
+                player.bottom = floor.top;
                 //
                 player.state = 'ON_BLOCK';
                 // アニメーション変更
@@ -156,14 +156,18 @@ phina.define('Floor', {
         var _this = this;
         // 親クラス初期化
         this.superInit();
-        //
+        // サイズ設定
         this.setSize(num * SPRITE_SIZE, SPRITE_SIZE);
-        //
-        num.times(function () {
-            Sprite('tiles', SPRITE_SIZE, SPRITE_SIZE).addChildTo(_this);
+        // スプライト配置
+        num.times(function (i) {
+            // 一旦左に寄せる
+            var sp = Sprite('tiles', SPRITE_SIZE, SPRITE_SIZE).addChildTo(_this);
+            sp.left = _this.left;
+            sp.y = _this.y;
+            sp.frameIndex = 3;
+            // 横位置調整
+            sp.x += i * SPRITE_SIZE;
         });
-        // タイルセットの指定フレームを表示   
-        s.frameIndex = 3;
     }
 });
 // メイン
