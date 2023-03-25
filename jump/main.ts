@@ -65,12 +65,9 @@ phina.define('MainScene', {
     const player = Player().addChildTo(this);
     player.setPosition(gx.center(), gy.span(13.5));
     player.state = 'FALLING';
-    // ブロック
-    [6, 9, 12, 15].each(function(i) {
-      //@ts-ignore
-      const block = Block().addChildTo(blockGroup);
-      block.setPosition(gx.center(), gy.span(i));
-    });
+    //@ts-ignore
+    var floor = Floor(3).addChildTo(this);
+    floor.setPosition(320, 600);
     // クラス全体で参照できるようにする
     this.player = player;
     this.blockGroup = blockGroup;
@@ -161,22 +158,19 @@ phina.define('Player', {
 });
 // 床クラス
 phina.define('Floor', {
-  superClass: 'DisplayElement',
+  superClass: 'RectangleShape',
   // コンストラクタ
   init: function(num: number) {
     // 親クラス初期化
     this.superInit();
-  },
-});
-// ブロッククラス
-phina.define('Block', {
-  superClass: 'Sprite',
-  // コンストラクタ
-  init: function() {
-    // 親クラス初期化
-    this.superInit('tiles', SPRITE_SIZE, SPRITE_SIZE);
+    //
+    this.setSize(num * SPRITE_SIZE, SPRITE_SIZE);
+    //
+    num.times(() => {
+      Sprite('tiles', SPRITE_SIZE, SPRITE_SIZE).addChildTo(this);
+    });
     // タイルセットの指定フレームを表示   
-    this.frameIndex = 3;
+    s.frameIndex = 3;
   },
 });
 // メイン
