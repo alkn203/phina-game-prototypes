@@ -36,7 +36,7 @@ const SCREEN_WIDTH = 640;
 const SCREEN_HEIGHT = 960;
 const SPRITE_SIZE = 64;
 const GRAVITY = 9.8 / 18;
-const JUMP_POWER = 15;
+const JUMP_POWER = 17;
 /**
  * メインシーン
  */
@@ -52,20 +52,30 @@ phina.define('MainScene', {
     const floorGroup = DisplayElement().addChildTo(this);
     // プレイヤー
     const player = Player().addChildTo(this);
-    player.setPosition(this.gridX.center(), this.gridY.span(14.5));
+    player.setPosition(this.gridX.center(), this.gridY.span(11.5));
     player.state = 'FALLING';
-    // 一番下の床
-    const ground = Floor(10).addChildTo(floorGroup);
-    ground.setPosition(this.gridX.center(), this.gridY.span(15.5));
-    ground.children.each(function(sp) {
-      sp.frameIndex = 0;
-    });
-    // 床
-    const floor = Floor(3).addChildTo(floorGroup);
-    floor.setPosition(this.gridX.center(), this.gridY.span(12.5));
     // クラス全体で参照できるようにする
     this.player = player;
     this.floorGroup = floorGroup;
+    // 床作成
+    this.initFloor();
+  },
+  /**
+   * 初期床作成
+   */
+  initFloor: function() {
+    const floorGroup = this.floorGroup;
+    // 一番下の床
+    const ground = Floor(10).addChildTo(floorGroup);
+    ground.setPosition(this.gridX.center(), this.gridY.span(12.5));
+    ground.children.each(function(sp) {
+      sp.frameIndex = 0;
+    });
+    // その他床
+    [8.5, 4.5, 0.5, -3.5].each((spanY) => {
+      const floor = Floor(3).addChildTo(floorGroup);
+      floor.setPosition(this.gridX.center(), this.gridY.span(spanY));
+    });
   },
   /**
    * 毎フレーム更新処理
@@ -122,7 +132,7 @@ phina.define('MainScene', {
     const rect = Rect(player.left, player.top + vy, player.width, player.height);
     let result = false;
     // ブロックグループをループ
-    this.floorGroup.children.some(function(floor) {
+    this.floorGroup.children.some((floor) => {
       // ブロックとのあたり判定
       if (Collision.testRectRect(rect, floor)) {
         // 移動量
@@ -130,11 +140,33 @@ phina.define('MainScene', {
         // 位置調整
         player.bottom = floor.top;
         //
+        if (player.state === 'FALLING') {
+          this.addFloor();
+          this.removeFloor();
+        }
         player.state = 'ON_BLOCK';
         // アニメーション変更
         player.anim.gotoAndPlay('stand');
         
         result = true;
+        return true;
+      }
+    });
+  },
+  /**
+   * 床追加
+   */
+  addFloor: function() {
+    const floor = Floor(3).addChildTo(this.floorGroup);
+    floor.x = this.gridX.center();
+    floor.y = this.gridY.span(-3.5);
+  },
+  /**
+   * 床削除
+   */
+  removeFloor: function() {
+    this.floorGroup.children.eraseIfAll((floor) => {
+      if (floor.x > SCREEN_HEIGHT) {
         return true;
       }
     });
