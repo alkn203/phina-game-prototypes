@@ -4,6 +4,7 @@ const ASSETS = {
   // 画像
   image: {
     'tomapiko': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/jump/assets/tomapiko_ss.png',
+    'karasu': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/jump/assets/karasu_ss.png',
     'tiles': 'https://cdn.jsdelivr.net/gh/alkn203/phina-game-prototypes@main/jump/assets/tiles.png',
   },
   // フレームアニメーション情報
@@ -24,6 +25,22 @@ const ASSETS = {
         },
         "fly": {
           "frames": [1, 2, 3],
+          "next": "fly",
+          "frequency": 4
+        },
+      }
+    },
+    'karasu_ss':
+    {
+      "frame": {
+        "width": 64,
+        "height": 64,
+        "rows": 1,
+        "cols": 3
+      },
+      "animations": {
+        "fly": {
+          "frames": [0, 1, 2],
           "next": "fly",
           "frequency": 4
         },
@@ -50,6 +67,7 @@ phina.define('MainScene', {
     this.backgroundColor = 'skyblue';
     // グループ
     const floorGroup = DisplayElement().addChildTo(this);
+    this.enemyGroup = DisplayElement().addChildTo(this);
     // プレイヤー
     const player = Player().addChildTo(this);
     player.setPosition(this.gridX.center(), this.gridY.span(11.5));
@@ -72,7 +90,7 @@ phina.define('MainScene', {
       sp.frameIndex = 0;
     });
     // その他床
-    [8.5, 4.5, 0.5, -3.5].each((spanY) => {
+    [8.5, 4.5, 0.5].each((spanY) => {
       const floor = Floor(3).addChildTo(floorGroup);
       floor.setPosition(this.gridX.center(), this.gridY.span(spanY));
     });
@@ -122,6 +140,10 @@ phina.define('MainScene', {
     this.floorGroup.children.each(function(floor) {
       floor.y -= player.vy;
     });
+    
+    this.enemyGroup.children.each(function(enemy) {
+      enemy.y -= player.vy;
+    });
   },
   // 縦方向の当たり判定
   collisionY: function() {
@@ -139,10 +161,11 @@ phina.define('MainScene', {
         player.vy = 0;
         // 位置調整
         player.bottom = floor.top;
-        //
+        // 床更新
         if (player.state === 'FALLING') {
           this.addFloor();
           this.removeFloor();
+          this.addEnemy();
         }
         player.state = 'ON_BLOCK';
         // アニメーション変更
@@ -171,6 +194,14 @@ phina.define('MainScene', {
       }
     });
   },
+  /**
+   * 敵追加
+   */
+  addEnemy: function() {
+    const enemy = Karasu().addChildTo(this.enemyGroup);
+    enemy.x = this.gridX.center();
+    enemy.y = this.gridY.span(-2.5);
+  },
 });
 // プレイヤークラス
 phina.define('Player', {
@@ -190,6 +221,29 @@ phina.define('Player', {
     
     if (real) {
       this.y += this.vy;      
+    }
+  },
+});
+// カラスクラス
+phina.define('Karasu', {
+  superClass: 'Sprite',
+  // コンストラクタ
+  init: function() {
+    // 親クラス初期化
+    this.superInit('karasu', SPRITE_SIZE, SPRITE_SIZE);
+    // フレームアニメーションをアタッチ
+    this.anim = FrameAnimation('karasu_ss').attachTo(this);
+    this.anim.gotoAndPlay('fly');
+    // 横移動速度
+    this.vx = -1 * [6, 3, 12].random();
+  },
+  //
+  update: function() {
+    this.x += this.vx;
+    //
+    if (this.left < 0 || this.right > SCREEN_WIDTH) {
+      this.vx *= -1;
+      this.scaleX *= -1;
     }
   },
 });
