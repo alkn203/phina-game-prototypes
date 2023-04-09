@@ -28,6 +28,16 @@ const ASSETS = {
           "next": "fly",
           "frequency": 4
         },
+        "damage": {
+          "frames": [4],
+          "next": "damage",
+          "frequency": 4
+        },
+        "down": {
+          "frames": [5],
+          "next": "down",
+          "frequency": 4
+        },
       }
     },
     'karasu_ss':
@@ -120,6 +130,10 @@ phina.define('MainScene', {
       case 'JUMPING':
         player.moveY();
         this.scrollY();
+        //
+        if (this.hitTestPlayerEnemy()) {
+          player.anim.gotoAndPlay('damage');
+        }
         // 下に落下開始
         if (player.vy > 0) {
           player.state = 'FALLING';
@@ -152,7 +166,6 @@ phina.define('MainScene', {
     const vy = player.vy === 0 ? 4: player.vy;
     // 当たり判定用の矩形
     const rect = Rect(player.left, player.top + vy, player.width, player.height);
-    let result = false;
     // ブロックグループをループ
     this.floorGroup.children.some((floor) => {
       // ブロックとのあたり判定
@@ -161,6 +174,20 @@ phina.define('MainScene', {
         player.vy = 0;
         // 位置調整
         player.bottom = floor.top;
+        const name = player.anim.currentAnimationName;
+        //
+        if (name === 'down') {
+          return true;
+        }
+        //
+        if (name === 'damage') {
+          player.anim.gotoAndPlay('down');
+          this.tweener.wait(1000)
+                      .call(() => {
+                        this.exit();
+                      });
+          return true;
+        }
         // 床更新
         if (player.state === 'FALLING') {
           this.addFloor();
@@ -171,7 +198,6 @@ phina.define('MainScene', {
         // アニメーション変更
         player.anim.gotoAndPlay('stand');
         
-        result = true;
         return true;
       }
     });
@@ -189,7 +215,7 @@ phina.define('MainScene', {
    */
   removeFloor: function() {
     this.floorGroup.children.eraseIfAll((floor) => {
-      if (floor.x > SCREEN_HEIGHT) {
+      if (floor.y > SCREEN_HEIGHT) {
         return true;
       }
     });
@@ -201,6 +227,31 @@ phina.define('MainScene', {
     const enemy = Karasu().addChildTo(this.enemyGroup);
     enemy.x = this.gridX.center();
     enemy.y = this.gridY.span(-2.5);
+  },
+  /**
+   * 敵削除
+   */
+  removeEnemy: function() {
+    this.enemyGroup.children.eraseIfAll((enemy) => {
+      if (enemy.y > SCREEN_HEIGHT) {
+        return true;
+      }
+    });
+  },
+  /**
+   * プレイヤーと敵の当たり判定
+   */
+  hitTestPlayerEnemy: function() {
+    let result = false;
+    
+    this.enemyGroup.children.some((enemy) => {
+      //
+      if (this.player.hitTestElement(enemy)) {
+        result = true;
+        return true;
+      }
+    });
+    return result;
   },
 });
 // プレイヤークラス
@@ -220,7 +271,7 @@ phina.define('Player', {
     this.vy += GRAVITY;
     
     if (real) {
-      this.y += this.vy;      
+      this.y += this.vy;
     }
   },
 });
